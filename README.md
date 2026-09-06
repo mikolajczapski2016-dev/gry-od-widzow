@@ -1,6 +1,6 @@
 # gry-od-widzów
 
-Strona z grami **Folia Bąbelkowa**, **Blue i Bingo — Wielka ucieczka** oraz **Bąbelkowa klawiatura**.
+Strona z grami **Blue i Bingo — Wielka ucieczka** oraz **Klawiatura**.
 
 Zagraj: https://mikolajczapski2016-dev.github.io/gry-od-widzow/
 
