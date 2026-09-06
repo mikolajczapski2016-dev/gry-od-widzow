@@ -1,6 +1,6 @@
 # gry-od-widzów
 
-Strona z grami **Blue i Bingo — Wielka ucieczka** oraz **Klawiatura**.
+Strona z grami **Blue i Bingo — Wielka ucieczka**, **Klawiatura** oraz **Pianino**.
 
 Zagraj: https://mikolajczapski2016-dev.github.io/gry-od-widzow/
 
