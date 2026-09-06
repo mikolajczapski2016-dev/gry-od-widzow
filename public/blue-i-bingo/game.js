@@ -115,3 +115,5 @@ addEventListener('keydown',e=>{const key=e.key.toLowerCase();if(['arrowleft','ar
 let touchStart=null;canvas.addEventListener('pointerdown',e=>{touchStart={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointerup',e=>{if(!touchStart)return;const dx=e.clientX-touchStart.x,dy=e.clientY-touchStart.y;if(Math.max(Math.abs(dx),Math.abs(dy))>20)act(Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'slide':'jump');else act('jump');touchStart=null});canvas.addEventListener('pointercancel',()=>touchStart=null);document.querySelectorAll('[data-action]').forEach(b=>b.onpointerdown=e=>{e.preventDefault();act(b.dataset.action)});addEventListener('blur',()=>{if(mode==='play')pause()});document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='play')pause()});
 document.addEventListener('charactersready',()=>{refreshHome();if(mode==='shop')renderShop()});
 refreshHome();panels('home');requestAnimationFrame(frame);
+
+window.addEventListener('game-orientation-change', event => { if (event.detail.blocked && mode === 'play') pause(); });

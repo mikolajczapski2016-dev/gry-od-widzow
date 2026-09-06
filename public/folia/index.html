@@ -1253,6 +1253,7 @@
       };
       if (directions[event.key]) stopMoving(directions[event.key]);
     });
+    window.addEventListener('game-orientation-change', event => { if (event.detail.blocked) stopMoving(); });
     window.addEventListener('blur', () => stopMoving());
     document.addEventListener('visibilitychange', () => { if (document.hidden) stopMoving(); });
     document.querySelectorAll('.dpad button').forEach(button => {
@@ -1372,5 +1373,6 @@
 body{padding-bottom:calc(56px + env(safe-area-inset-bottom,0px))}body.city-mode .city-shop{bottom:calc(72px + env(safe-area-inset-bottom,0px))}body.city-mode .city-controls{bottom:calc(68px + env(safe-area-inset-bottom,0px))}body.city-mode .city-tip{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
 </style>
 <nav id="game-exit-bar" aria-label="Powrót do listy gier"><a href="../index.html">← Wyjdź z gry · Wróć do strony</a></nav>
+<script src="../shared/landscape.js"></script>
 </body>
 </html>
