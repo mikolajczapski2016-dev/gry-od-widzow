@@ -1,0 +1,72 @@
+{
+  "blue": {
+    "page": "https://www.bluey.tv/characters/bluey/",
+    "image": "https://www.bluey.tv/wp-content/uploads/2023/07/Bluey.png",
+    "bytes": 168307
+  },
+  "bingo": {
+    "page": "https://www.bluey.tv/characters/bingo/",
+    "image": "https://www.bluey.tv/wp-content/uploads/2023/07/B2.png",
+    "bytes": 157945
+  },
+  "chloe": {
+    "page": "https://www.bluey.tv/characters/chloe/",
+    "image": "https://www.bluey.tv/wp-content/uploads/2023/07/Untitled-1.png",
+    "bytes": 140409
+  },
+  "rusty": {
+    "page": "https://www.bluey.tv/characters/rusty/",
+    "image": "https://www.bluey.tv/wp-content/uploads/2023/07/Rusty-1.png",
+    "bytes": 697043
+  },
+  "mackenzie": {
+    "page": "https://www.bluey.tv/characters/mackenzie/",
+    "image": "https://www.bluey.tv/wp-content/uploads/2023/07/MACKENZIE-1.png",
+    "bytes": 158323
+  },
+  "coco": {
+    "page": "https://www.bluey.tv/characters/coco/",
+    "image": "https://www.bluey.tv/wp-content/uploads/2023/07/Coco.png",
+    "bytes": 154549
+  },
+  "snickers": {
+    "page": "https://www.bluey.tv/characters/snickers/",
+    "image": "https://www.bluey.tv/wp-content/uploads/2023/07/Snickers.png",
+    "bytes": 137925
+  },
+  "honey": {
+    "page": "https://www.bluey.tv/characters/honey/",
+    "image": "https://www.bluey.tv/wp-content/uploads/2023/07/Honey.png",
+    "bytes": 171798
+  },
+  "bandit": {
+    "page": "https://www.bluey.tv/characters/bandit/",
+    "image": "https://www.bluey.tv/wp-content/uploads/2023/07/Bandit.png",
+    "bytes": 239439
+  },
+  "chilli": {
+    "page": "https://www.bluey.tv/characters/chilli/",
+    "image": "https://www.bluey.tv/wp-content/uploads/2023/07/Chilli.png",
+    "bytes": 193334
+  },
+  "stripe": {
+    "page": "https://www.bluey.tv/characters/uncle-stripe/",
+    "image": "https://www.bluey.tv/wp-content/uploads/2023/09/Stripe-Shadow.png",
+    "bytes": 267500
+  },
+  "trixie": {
+    "page": "https://www.bluey.tv/characters/aunt-trixie/",
+    "image": "https://www.bluey.tv/wp-content/uploads/2023/07/Trixie-fixed.png",
+    "bytes": 194054
+  },
+  "pat": {
+    "page": "https://www.bluey.tv/characters/luckys-dad/",
+    "image": "https://www.bluey.tv/wp-content/uploads/2023/07/LUCKTS-DAD.png",
+    "bytes": 308305
+  },
+  "rad": {
+    "page": "https://www.bluey.tv/characters/uncle-rad/",
+    "image": "https://www.bluey.tv/wp-content/uploads/2023/09/Rad-Shadow.png",
+    "bytes": 271008
+  }
+}

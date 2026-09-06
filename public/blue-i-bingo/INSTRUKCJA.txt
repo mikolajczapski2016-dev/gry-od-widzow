@@ -1,0 +1,46 @@
+BLUE I BINGO — WIELKA UCIECZKA 3D
+
+Uruchom skrót „Blue i Bingo — Wielka ucieczka” na pulpicie.
+Gra działa lokalnie, bez internetu i bez instalowania bibliotek.
+To samodzielna gra fanowska inspirowana Subway Surfers, a nie kopia 1:1.
+
+STEROWANIE
+Lewo / prawo albo A / D — zmiana toru.
+Góra, W albo Spacja — skok nad niską barierką.
+Dół albo S — ślizg pod wysoką belką.
+Esc albo P — pauza. F11 — pełny ekran przeglądarki.
+Na ekranie dotykowym użyj gestów lub przycisków.
+Pociągi omijaj albo wskakuj na ich dachy z ramp i z superbutami.
+
+SKLEP
+Blue i Tata Blue są dostępni od początku.
+Bingo i inne dzieci odblokujesz w zakładce Biegacze.
+Mamę Blue i innych dorosłych odblokujesz w zakładce Dorośli w pościgu.
+Zakupy kosztują tylko monety zdobyte w grze. Nie ma prawdziwych płatności.
+Każda moneta jest zapisywana od razu, także gdy zamkniesz okno podczas biegu.
+Wybrane postacie, zakupy i rekord pozostają zapisane w tej samej przeglądarce.
+Wyczyszczenie danych przeglądarki usuwa zapis. Tryb prywatny nie zachowuje go na stałe.
+
+BONUSY
+Gwiazdka — tarcza chroniąca przed jednym zderzeniem (do 18 sekund).
+U — magnes zbierający monety ze wszystkich torów (12 sekund).
+
+AKTUALIZACJA 3D
+Trasa, budynki i pociągi są przestrzenne. Kamera patrzy z góry.
+Tory są prostymi szynami na płaskim podłożu, bez wyginania perspektywy.
+Postacie są ponownie rysunkowe 2D, z oryginalnych ilustracji z bajki Bluey.
+Animowane nogi i łapy poruszają się podczas biegu. Trasa zachowuje widok z góry.
+Źródła każdej ilustracji: assets/sources.json. Postacie © Ludo Studio.
+Silnik: Three.js (licencja MIT w vendor/LICENSE-three.txt).
+Wszystkie potrzebne pliki są lokalne, gra działa bez internetu.
+Poprzednie monety i zakupy zachowano pod tym samym kluczem zapisu.
+
+BUTY, JETPACK I RAMPY
+Buty i jetpack leżą na torach. Wbiegnij na przedmiot, żeby go podnieść.
+Superbuty działają 18 sekund. Góra/Spacja wykonuje wtedy dużo wyższy skok.
+Jetpack działa 10 sekund i automatycznie unosi postać nad pociągi.
+W locie zmieniaj tory strzałkami i zbieraj monety w powietrzu.
+Po locie postać łagodnie opada i dostaje krótką ochronę przy lądowaniu.
+Zielone rampy ze strzałkami wybijają na dachy długich pociągów.
+Na dachu zbierasz monety, skaczesz i zmieniasz tor. Za końcem dachu spadasz.
+Postacie mają animację nóg i łap, podskakiwanie w biegu i przechył przy ślizgu.
