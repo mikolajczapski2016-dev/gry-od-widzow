@@ -7,6 +7,9 @@
 <style>
 :root{color-scheme:dark;font-family:Arial,Helvetica,sans-serif;color:#f4f3ff;background:#11111b}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 10%,#46207844,transparent 45%)}a{color:inherit;text-decoration:none}header,main,footer{max-width:1120px;margin:auto;padding:0 28px}header{height:98px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff12}.brand{font-weight:800;letter-spacing:-.6px;font-size:21px}.brand span{color:#ba9bff}.logo{display:inline-grid;place-items:center;background:#a980ff;color:#161020;width:35px;height:35px;border-radius:11px;margin-right:10px}nav{font-size:14px;color:#c4bfd5}nav a:hover{color:white}.intro{padding:74px 0 44px}.eyebrow{text-transform:uppercase;letter-spacing:2.5px;font-size:11px;font-weight:bold;color:#b797fa;display:flex;align-items:center;gap:9px}.dot{height:7px;width:7px;border-radius:50%;background:#b797fa}h1{font-size:clamp(40px,6vw,70px);line-height:1.06;letter-spacing:-3px;margin:22px 0}h1 span{color:#bc9bff}.intro p{color:#aaa6ba;line-height:1.7;font-size:17px;margin:0}.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}.section-head h2{font-size:19px;margin:0}.count{font-size:12px;color:#aaa6ba;border:1px solid #ffffff18;border-radius:20px;padding:7px 12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:25px}.card{border:1px solid #ffffff13;border-radius:22px;overflow:hidden;background:#1c1b29;transition:transform .2s,border-color .2s}.card:hover{transform:translateY(-5px);border-color:#a980ff88}.art{height:240px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}.bubbles{background:radial-gradient(ellipse at top,#8775ca,#383268)}.bubble-grid{display:grid;grid-template-columns:repeat(6,49px);gap:11px;transform:rotate(-15deg);padding:28px;border:1px solid #ffffff30;border-radius:24px;background:#ffffff09;box-shadow:0 18px 35px #1c164866}.bubble{height:49px;border-radius:50%;background:radial-gradient(circle at 30% 23%,#ffffffce 0%,#ffffff25 17%,#bcadf05a 45%,#55458699 73%);box-shadow:inset 0 0 0 2px #e4d7ff65,0 5px 6px #1a153846}.bubble:nth-child(7n){background:#655890;box-shadow:inset 0 2px 7px #29233d80}.run{background:linear-gradient(#7cced8,#c7eeee 65%,#a7c990 65%,#628748)}.run:before{content:'';position:absolute;bottom:-60px;width:180px;height:200px;background:#e8c8a0;transform:perspective(100px) rotateX(25deg)}.run img{height:190px;width:155px;object-fit:contain;z-index:1;filter:drop-shadow(0 8px 4px #17324730);transform:rotate(-5deg)}.run img+img{height:155px;transform:rotate(6deg);align-self:flex-end;margin-bottom:20px}.badge{position:absolute;top:17px;left:17px;border:1px solid #ffffff40;background:#13122278;backdrop-filter:blur(8px);padding:7px 11px;border-radius:8px;font-size:11px;font-weight:bold;z-index:2}.content{padding:26px}.category{font-size:10px;letter-spacing:1.8px;color:#bfa1ff;font-weight:bold}.content h3{font-size:25px;letter-spacing:-.6px;margin:12px 0 10px}.content p{color:#aaa6ba;line-height:1.6;font-size:14px;min-height:45px;margin:0 0 24px}.play{display:flex;align-items:center;justify-content:space-between;background:#b896ff;color:#191126;padding:14px 18px;border-radius:11px;font-size:14px;font-weight:bold}.card:nth-child(2) .play{background:#c9eea5}.play:hover{filter:brightness(1.12)}a:focus-visible{outline:3px solid #fff;outline-offset:5px}.note{display:flex;gap:15px;align-items:center;margin:34px 0 60px;padding:22px;border-radius:15px;border:1px solid #ffffff10;color:#aaa6ba;font-size:13px;line-height:1.6}.note strong{color:#e3dfef}.note .star{color:#bd9bff;font-size:28px}footer{border-top:1px solid #ffffff12;padding-top:24px;padding-bottom:28px;display:flex;justify-content:space-between;color:#858095;font-size:12px}@media(max-width:650px){header,main,footer{padding-left:20px;padding-right:20px}header{height:80px}.brand{font-size:17px}nav{font-size:12px}.intro{padding-top:48px}h1{letter-spacing:-1.8px}.grid{grid-template-columns:1fr}.art{height:220px}.content h3{font-size:23px}footer{gap:20px;flex-wrap:wrap}.note{margin-bottom:40px}}@media(prefers-reduced-motion:reduce){.card{transition:none}}
 .channel-banner{margin:0;padding:24px 20px;text-align:center;background:#b896ff;color:#191126;font-size:clamp(24px,4vw,40px);font-weight:800;line-height:1.3}.channel-banner strong{white-space:nowrap;letter-spacing:2px}
+.channel-letter{animation:letter-color 3s linear infinite;animation-delay:var(--delay)}
+@keyframes letter-color{0%,100%{color:#73102b}20%{color:#713400}40%{color:#155128}60%{color:#073e83}80%{color:#601179}}
+@media(prefers-reduced-motion:reduce){.channel-letter{animation:none}}
 </style>
 </head><body>
 <p class="channel-banner">Wbij na kanał <strong>.......</strong> i zaproponuj własną grę!</p>
@@ -19,4 +22,26 @@
 <article class="card"><div class="art run" aria-hidden="true"><span class="badge">WIELKA UCIECZKA 3D</span><img src="blue-i-bingo/assets/blue.png" alt=""><img src="blue-i-bingo/assets/bingo.png" alt=""></div><div class="content"><span class="category">PRZYGODA • ZRĘCZNOŚĆ</span><h3>Blue i Bingo</h3><p>Wielka ucieczka czeka! Biegnij, zbieraj monety i odblokowuj kolejnych bohaterów.</p><a class="play" href="blue-i-bingo/index.html" aria-label="Graj w Blue i Bingo — Wielka ucieczka">Graj teraz <span aria-hidden="true">↗</span></a></div></article>
 </div></section><aside class="note"><span class="star" aria-hidden="true">✧</span><div><strong>Zabawa zaczyna się od jednego kliknięcia.</strong><br>Obie gry uruchomisz bezpośrednio w przeglądarce. Miłej zabawy!</div></aside></main>
 <footer><span>✦ gry-od-widzów</span><span>Stworzone z pomysłów widzów. Dla zabawy.</span></footer>
+<script>
+const banner = document.querySelector('.channel-banner');
+const walker = document.createTreeWalker(banner, NodeFilter.SHOW_TEXT);
+const textNodes = [];
+while (walker.nextNode()) textNodes.push(walker.currentNode);
+let letterIndex = 0;
+for (const node of textNodes) {
+  const fragment = document.createDocumentFragment();
+  for (const letter of node.textContent) {
+    if (/\s/.test(letter)) {
+      fragment.append(document.createTextNode(letter));
+      continue;
+    }
+    const span = document.createElement('span');
+    span.className = 'channel-letter';
+    span.textContent = letter;
+    span.style.setProperty('--delay', `${-letterIndex++ * 0.19}s`);
+    fragment.append(span);
+  }
+  node.replaceWith(fragment);
+}
+</script>
 </body></html>
