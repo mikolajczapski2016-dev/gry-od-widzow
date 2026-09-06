@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bąbelkowa klawiatura</title>
+<style>
+:root{font-family:Arial,sans-serif;color:#f6f0ff;background:#171229;color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100svh;background:radial-gradient(ellipse at 50% 15%,#49366c,transparent 70%);display:grid;place-items:center;padding:24px}main{width:min(1060px,100%)}header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}h1{font-size:clamp(24px,4vw,42px);margin:0 0 8px;letter-spacing:-1px}p{margin:0;color:#c4b5de;line-height:1.5}button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.sound{border:1px solid #ffffff35;background:#ffffff10;color:white;border-radius:16px;padding:12px 16px;white-space:nowrap}.keyboard{padding:clamp(10px,3vw,30px);border-radius:30px;background:linear-gradient(145deg,#ffffff18,#ffffff06);border:1px solid #ffffff35;box-shadow:0 25px 65px #08031155,inset 0 1px #ffffff30}.row{display:flex;justify-content:center;gap:clamp(4px,1vw,12px);margin-bottom:12px}.row:last-child{margin-bottom:0}.key{position:relative;flex:1;max-width:78px;min-width:0;aspect-ratio:1;border:1px solid #f0dcff80;border-radius:50%;color:white;font-size:clamp(14px,2.4vw,25px);font-weight:bold;background:radial-gradient(circle at 30% 23%,#ffffffb0 0%,#ffffff35 16%,#b59be34a 42%,#634487bb 75%);box-shadow:inset 0 0 0 3px #e0c5ff20,inset -4px -6px 10px #27133560,0 6px 0 #1e142e,0 9px 12px #0c071b55;text-shadow:0 1px 4px #180b33;transition:transform .09s,box-shadow .09s,background .09s;user-select:none}.key.pressed,.key:active{transform:translateY(5px) scale(.94);background:radial-gradient(circle,#6b468e,#42265e);box-shadow:inset 0 4px 12px #1a092b99,0 1px 0 #1e142e}.key.wide{max-width:450px;aspect-ratio:auto;height:clamp(40px,7vw,68px);border-radius:40px;font-size:16px}.key.delete{max-width:120px;aspect-ratio:auto;border-radius:25px;font-size:20px}.screen{display:block;width:100%;height:90px;resize:none;margin:0 0 24px;padding:18px 22px;border:1px solid #ffffff25;border-radius:18px;background:#120c2080;color:#eee3ff;font:22px/1.5 Arial,sans-serif;overflow:auto}.screen::placeholder{color:#b4a1cc}footer{text-align:center;margin-top:24px;font-size:14px}a{color:#c9adff}button:focus-visible,a:focus-visible{outline:3px solid #ffe68b;outline-offset:4px}@media(max-height:500px){body{padding:14px}header{margin-bottom:12px}h1{font-size:24px}.screen{height:50px;margin-bottom:12px;padding:8px 16px}.keyboard{padding:12px 20px}.key{max-width:48px;font-size:17px}.row{margin-bottom:8px}.key.wide{height:35px}footer{margin-top:12px}}@media(prefers-reduced-motion:reduce){.key{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<header><div><h1>Bąbelkowa klawiatura</h1><p>Klikaj, pisz i pykaj. Każdy klawisz to bąbelek!</p></div><button type="button" class="sound" id="sound" aria-pressed="true">Dźwięk: włączony</button></header>
+<textarea class="screen" id="screen" readonly aria-label="Napisany tekst" placeholder="Napisz coś bąbelkami…"></textarea>
+<section class="keyboard" id="keyboard" aria-label="Bąbelkowa klawiatura"></section>
+<footer><a href="https://mikolajczapski2016-dev.github.io/gry-od-widzow/">← Wróć do listy gier</a></footer>
+</main>
+<script>
+const keyboard=document.querySelector('#keyboard');
+const screen=document.querySelector('#screen');
+const soundButton=document.querySelector('#sound');
+const keys=new Map();
+const timers=new Map();
+let sound=true,audio;
+function pop(){
+ if(!sound)return;
+ try{
+  audio??=new (window.AudioContext||window.webkitAudioContext)();
+  if(audio.state==='suspended')audio.resume();
+  const oscillator=audio.createOscillator(),gain=audio.createGain(),now=audio.currentTime;
+  oscillator.type='sine';oscillator.frequency.setValueAtTime(550+Math.random()*180,now);oscillator.frequency.exponentialRampToValueAtTime(80,now+.08);
+  gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.25,now+.004);gain.gain.exponentialRampToValueAtTime(.0001,now+.1);
+  oscillator.connect(gain);gain.connect(audio.destination);oscillator.start(now);oscillator.stop(now+.11);
+ }catch{}
+}
+function press(key){
+ const button=keys.get(key);if(!button)return;
+ if(key==='Backspace')screen.value=Array.from(screen.value).slice(0,-1).join('');
+ else screen.value=(screen.value+(key==='Space'?' ':key.toLowerCase())).slice(-2000);
+ screen.scrollTop=screen.scrollHeight;
+ button.classList.add('pressed');clearTimeout(timers.get(key));timers.set(key,setTimeout(()=>button.classList.remove('pressed'),180));pop();
+}
+for(const row of ['1234567890','QWERTYUIOP','ASDFGHJKL','ZXCVBNM',['Space','Backspace']]){
+ const container=document.createElement('div');container.className='row';
+ for(const key of row){
+  const button=document.createElement('button');button.type='button';button.className='key'+(key==='Space'?' wide':key==='Backspace'?' delete':'');button.textContent=key==='Space'?'Spacja':key==='Backspace'?'⌫':key;
+  button.setAttribute('aria-label',key==='Backspace'?'Usuń ostatni znak':key==='Space'?'Spacja':key);
+  button.addEventListener('click',()=>press(key));keys.set(key,button);container.append(button);
+ }
+ keyboard.append(container);
+}
+soundButton.addEventListener('click',()=>{sound=!sound;soundButton.textContent='Dźwięk: '+(sound?'włączony':'wyłączony');soundButton.setAttribute('aria-pressed',String(sound));});
+window.addEventListener('keydown',event=>{
+ if(event.ctrlKey||event.metaKey||event.altKey||event.target===soundButton)return;
+ if(event.key===' '&&event.target instanceof HTMLButtonElement)return;
+ const key=event.key===' '?'Space':event.key==='Backspace'?'Backspace':event.key.toUpperCase();
+ if(keys.has(key)){event.preventDefault();if(!event.repeat)press(key);}
+});
+</script>
+<script src="../shared/landscape.js"></script>
+</body>
+</html>
