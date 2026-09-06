@@ -19,6 +19,9 @@
 #game-exit-bar a:hover{background:#d3bdff}
 #game-exit-bar a:focus-visible{outline:3px solid white;outline-offset:2px}
 .overlay{bottom:calc(56px + env(safe-area-inset-bottom,0px))}#shop .panel{max-height:100%}#touch{bottom:calc(74px + env(safe-area-inset-bottom,0px))}#power{bottom:calc(141px + env(safe-area-inset-bottom,0px))}
+.overlay{align-items:flex-start;overflow-y:auto;overflow-x:hidden;touch-action:pan-y;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#9bcbdc #103b59}
+.overlay .panel{flex-shrink:0;margin-block:auto}
+#shop .panel{max-height:none;overflow:visible}
 </style>
 <nav id="game-exit-bar" aria-label="Powrót do listy gier"><a href="../index.html">← Wyjdź z gry · Wróć do strony</a></nav>
 <script src="../shared/landscape.js"></script>
