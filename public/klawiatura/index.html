@@ -10,7 +10,7 @@
 </head>
 <body>
 <main>
-<header><div><h1>Klawiatura</h1><p>Klikaj myszką lub naciskaj klawisze na swojej klawiaturze.</p></div><button type="button" class="sound" id="sound" aria-pressed="true">Dźwięk: włączony</button></header>
+<header><div><h1>Klawiatura</h1><p>Dotykaj klawiszy na ekranie, klikaj myszką lub używaj swojej klawiatury.</p></div><button type="button" class="sound" id="sound" aria-pressed="true">Dźwięk: włączony</button></header>
 <section class="keyboard" id="keyboard" aria-label="Klawiatura"></section>
 <footer><a href="https://mikolajczapski2016-dev.github.io/gry-od-widzow/">← Wróć do listy gier</a></footer>
 </main>
@@ -19,17 +19,23 @@ const keyboard=document.querySelector('#keyboard');
 const soundButton=document.querySelector('#sound');
 const timers=new WeakMap();
 let sound=true,audio;
-function clickSound(){
+async function clickSound(){
  if(!sound)return;
  try{
-  audio??=new (window.AudioContext||window.webkitAudioContext)();
-  if(audio.state==='suspended')audio.resume();
+  // Configure mobile playback inside the tap/click that starts the sound.
+  try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch{}
+  if(!audio||audio.state==='closed')audio=new (window.AudioContext||window.webkitAudioContext)();
+  // iOS can also interrupt audio after locking the phone or switching apps.
+  if(audio.state!=='running')await audio.resume();
+  if(!sound||document.hidden||audio.state!=='running')return;
   const length=Math.ceil(audio.sampleRate*.035),buffer=audio.createBuffer(1,length,audio.sampleRate),data=buffer.getChannelData(0);
   for(let i=0;i<length;i++)data[i]=(Math.random()*2-1)*Math.exp(-i/(audio.sampleRate*.005));
   const source=audio.createBufferSource(),gain=audio.createGain(),filter=audio.createBiquadFilter();
   source.buffer=buffer;filter.type='lowpass';filter.frequency.value=2800;gain.gain.value=.35;
-  source.connect(filter);filter.connect(gain);gain.connect(audio.destination);source.start();
- }catch{}
+  source.connect(filter);filter.connect(gain);gain.connect(audio.destination);
+  source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};
+  source.start();
+ }catch(error){console.warn('Nie udało się odtworzyć dźwięku klawisza:',error);}
 }
 const rows=[
  ['Esc','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12','Del'],
@@ -76,7 +82,7 @@ function releaseKeys(){heldKeys.clear();physicalKeys.forEach(button=>{clearTimeo
 window.addEventListener('blur',releaseKeys);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseKeys();});
 window.addEventListener('game-orientation-change',event=>{if(event.detail.blocked)releaseKeys();});
-soundButton.addEventListener('click' ,()=>{sound=!sound;soundButton.textContent='Dźwięk: '+(sound?'włączony':'wyłączony');soundButton.setAttribute('aria-pressed',String(sound));});
+soundButton.addEventListener('click' ,()=>{sound=!sound;soundButton.textContent='Dźwięk: '+(sound?'włączony':'wyłączony');soundButton.setAttribute('aria-pressed',String(sound));if(sound)clickSound();});
 </script>
 <script src="../shared/landscape.js"></script>
 </body>
