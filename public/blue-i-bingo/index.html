@@ -14,16 +14,17 @@
 <div id="toast"></div><div id="power" class="hidden"></div><div id="touch" class="hidden"><div><button data-action="left" aria-label="W lewo">←</button><button data-action="right" aria-label="W prawo">→</button></div><div><button data-action="slide" aria-label="Ślizg">↓</button><button data-action="jump" aria-label="Skok">↑</button></div></div>
 <script src="vendor/three.min.js"></script><script src="assets/characters.js"></script><script src="scene3d.js"></script><script src="game.js"></script>
 <style id="game-exit-style">
-#game-exit-bar{position:fixed;inset:auto 0 0;z-index:10000;display:flex;flex-direction:column;gap:4px;justify-content:center;align-items:center;min-height:78px;padding:6px 12px calc(6px + env(safe-area-inset-bottom,0px));background:#171422f5;border-top:1px solid #ffffff30;box-sizing:border-box}
+#game-exit-bar{position:fixed;inset:auto 0 0;z-index:10000;display:none;flex-direction:column;gap:4px;justify-content:center;align-items:center;min-height:78px;padding:6px 12px calc(6px + env(safe-area-inset-bottom,0px));background:#171422f5;border-top:1px solid #ffffff30;box-sizing:border-box}
+body:has(#home:not(.hidden),#shop:not(.hidden)) #game-exit-bar{display:flex}
 #game-exit-bar a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 20px;border-radius:12px;background:#bc9bff;color:#211334;font:700 14px system-ui,sans-serif;text-decoration:none;box-sizing:border-box}
 #game-exit-bar .fullscreen-note{margin:0;color:#e2d5f5;font:600 12px/18px system-ui,sans-serif;text-align:center}
 #game-exit-bar a:hover{background:#d3bdff}
 #game-exit-bar a:focus-visible{outline:3px solid white;outline-offset:2px}
-.overlay{bottom:calc(78px + env(safe-area-inset-bottom,0px))}#shop .panel{max-height:100%}#touch{bottom:calc(96px + env(safe-area-inset-bottom,0px))}#power{bottom:calc(163px + env(safe-area-inset-bottom,0px))}
+#home,#shop{bottom:calc(78px + env(safe-area-inset-bottom,0px))}#shop .panel{max-height:100%}
 .overlay{align-items:flex-start;overflow-y:auto;overflow-x:hidden;touch-action:pan-y;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#9bcbdc #103b59}
 .overlay .panel{flex-shrink:0;margin-block:auto}
 #shop .panel{max-height:none;overflow:visible}
 </style>
-<nav id="game-exit-bar" aria-label="Powrót do listy gier"><a href="../index.html">← Wyjdź z gry · Wróć do strony</a><p class="fullscreen-note">Proszę, korzystajcie z pełnego ekranu.</p></nav>
+<nav id="game-exit-bar" aria-label="Powrót do listy gier"><a href="../index.html">← Wróć do listy gier</a><p class="fullscreen-note">Proszę, korzystajcie z pełnego ekranu.</p></nav>
 <script src="../shared/landscape.js"></script>
 </html>
