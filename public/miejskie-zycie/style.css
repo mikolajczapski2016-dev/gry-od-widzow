@@ -6,3 +6,6 @@
 .settings-buttons{display:grid;gap:12px;margin-top:24px}
 /* The game-list link belongs only to this game's settings. */
 #rotate-phone a{display:none}
+
+#combatHint{position:absolute;left:50%;bottom:52px;transform:translateX(-50%);padding:6px 11px;background:#10171c9c;color:#e3e8e8;border-radius:5px;font-size:11px;text-align:center;max-width:48%}#prompt{bottom:88px}.top .brand{letter-spacing:1px;font-size:15px}.brand small{letter-spacing:1.4px}.mission{background:#10171cc9}.wallet{background:#10171cd9}.map{background:#10171cd9}.overlay{background:linear-gradient(100deg,#0c1319b8,#15202d30)}.panel{background:#172027e8}.wanted small{background:#172027c9}
+@media(pointer:coarse){#combatHint{bottom:61px;font-size:9px;max-width:36%}#prompt{bottom:20px}.mission{max-width:185px}}

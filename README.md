@@ -16,3 +16,10 @@ Spacja (strzał), J (zajęcie), P (pauza). Na telefonie dostępne są joystick i
 Powrót do listy gier znajduje się w ustawieniach. Portfel, liczba dostaw i ustawienie
 dźwięku zapisują się lokalnie. Gra korzysta z lokalnej kopii Three.js oraz jej licencji
 w `public/blue-i-bingo/vendor/`.
+
+Grafika Miejskiego życia: widok zza postaci, modele z zaokrągloną geometrią,
+animowane kończyny, cienie i lokalne tekstury fotograficzne (źródła w
+`public/miejskie-zycie/assets/SOURCES.md`). Strzałki/WASD działają zgodnie
+z kierunkami na ekranie zarówno pieszo, jak i w aucie. Ciosy i strzały
+korzystają z automatycznego celowania; F/Spację i przyciski dotykowe można
+przytrzymać. Kliknięcie osoby wybiera cel i oddaje strzał.
