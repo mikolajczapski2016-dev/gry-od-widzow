@@ -15,18 +15,43 @@ function syncVecnaMusic(){
  const source=audio.createBufferSource(),gain=audio.createGain();source.buffer=vecnaBuffer;source.loop=true;gain.gain.value=.45;source.connect(gain);gain.connect(audio.destination);source.onended=()=>{source.disconnect();gain.disconnect();if(vecnaSource===source)vecnaSource=null;};vecnaSource=source;source.start(0,curse.elapsed%vecnaBuffer.duration);
 }
 function createRealm(){
- const world=new THREE.Scene();world.background=new THREE.Color(0x321e3f);world.fog=new THREE.FogExp2(0x553046,.015);
+ const world=new THREE.Scene();world.background=new THREE.Color(0x36141e);world.fog=new THREE.FogExp2(0x442335,.009);
  world.add(new THREE.HemisphereLight(0xebc4ff,0x655779,3.4));const sun=new THREE.DirectionalLight(0xff8699,4);sun.position.set(-10,30,-20);world.add(sun);
  PolarityWorld.box(world,0,-.15,0,144,.3,144,0x49344d);
  for(const b of colliders){PolarityWorld.box(world,b.x,b.h/2,b.z,b.w,b.h,b.d,0x584159);for(let y=2;y<b.h;y+=4)PolarityWorld.box(world,b.x,y,b.z+b.d/2+.04,b.w*.7,.04,.04,0x8e354d);}
- const vineMaterial=new THREE.MeshStandardMaterial({color:0x94526a,roughness:.9});
+ // The downloaded still wraps around the distant scenery; nearby geometry provides parallax.
+ const backdropTexture=new THREE.TextureLoader().load('assets/upside-down.jpg');
+ backdropTexture.colorSpace=THREE.SRGBColorSpace;backdropTexture.wrapS=THREE.MirroredRepeatWrapping;backdropTexture.repeat.x=6;
+ const backdrop=new THREE.Mesh(new THREE.SphereGeometry(140,96,40),new THREE.MeshBasicMaterial({map:backdropTexture,side:THREE.BackSide,fog:false,color:0xbba0aa}));
+ backdrop.name='upside-down-photo';backdrop.position.y=0;world.add(backdrop);
+ const vineMaterial=new THREE.MeshStandardMaterial({color:0x69404c,roughness:.9});
+ const growth=new THREE.Group();growth.name='upside-down-growth';world.add(growth);
+ function tendril(points,radius){const mesh=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points),12,radius,5,false),vineMaterial);growth.add(mesh);return mesh;}
+ // Attach roots to existing walls so the chase paths stay passable.
+ for(const b of colliders){
+  for(let j=0;j<3;j++){
+   const x=b.x+(j-1)*b.w*.28,z=b.z+b.d/2+.16;
+   tendril([new THREE.Vector3(x+1,.06,z+1),new THREE.Vector3(x,.6,z),new THREE.Vector3(x-.5,b.h*.5,z),new THREE.Vector3(x+.4,b.h,z)],.09);
+  }
+ }
+ // Bare trees outside the playable boundary add depth against the photographed forest.
+ for(let i=0;i<28;i++){
+  const a=i/28*Math.PI*2,x=Math.sin(a)*86,z=Math.cos(a)*86,h=8+(i%5)*1.4;
+  tendril([new THREE.Vector3(x,0,z),new THREE.Vector3(x+.4,h*.5,z),new THREE.Vector3(x-.7,h,z+.4)],.24);
+  for(let j=0;j<4;j++){
+   const direction=a+j*2.4,dx=Math.sin(direction),dz=Math.cos(direction),y=h*(.35+j*.12);
+   const end=new THREE.Vector3(x+dx*4,y+3,z+dz*4);
+   tendril([new THREE.Vector3(x,y,z),new THREE.Vector3(x+dx*2,y+.7,z+dz*2),end],.09);
+   tendril([end.clone().add(new THREE.Vector3(-dx*1.5,-1.3,-dz*1.5)),end.clone().add(new THREE.Vector3(dz,1,-dx))],.045);
+  }
+ }
  for(let i=0;i<38;i++){
   const x=Math.sin(i*4.7)*60,z=Math.cos(i*2.7)*60;
   const pts=[new THREE.Vector3(x,.1,z),new THREE.Vector3(x+3,.4,z-3),new THREE.Vector3(x-1,3,z-5),new THREE.Vector3(x+2,6,z-7)];world.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),12,.12,6,false),vineMaterial));
  }
  const geometry=new THREE.BufferGeometry(),positions=new Float32Array(600*3);for(let i=0;i<600;i++){positions[i*3]=(Math.random()-.5)*136;positions[i*3+1]=Math.random()*25;positions[i*3+2]=(Math.random()-.5)*136;}geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));
  const spores=new THREE.Points(geometry,new THREE.PointsMaterial({color:0xe9b7c9,size:.09,transparent:true,opacity:.7}));world.add(spores);
- const view=new THREE.PerspectiveCamera(65,1,.05,220),observer=new THREE.PerspectiveCamera(55,1,.1,200);world.add(view);const claws=PolarityWorld.hands(view);applyGlove(claws,'vecna');claws.pistol.visible=false;
+ const view=new THREE.PerspectiveCamera(65,1,.05,300),observer=new THREE.PerspectiveCamera(55,1,.1,200);world.add(view);const claws=PolarityWorld.hands(view);applyGlove(claws,'vecna');claws.pistol.visible=false;
  const clock=new THREE.Group();world.add(clock);PolarityWorld.box(clock,0,1.6,0,1.2,3.2,.5,0x382337);
  const face=new THREE.Mesh(new THREE.CircleGeometry(.48,32),new THREE.MeshBasicMaterial({color:0xd49caa}));face.position.set(0,2.4,.27);clock.add(face);PolarityWorld.box(clock,0,2.55,.29,.035,.3,.02,0x231426);PolarityWorld.box(clock,.13,2.4,.3,.26,.035,.02,0x231426);
  return {scene:world,camera:view,observer,hands:claws,spores,clock,ghosts:new Map()};

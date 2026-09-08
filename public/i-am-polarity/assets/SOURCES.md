@@ -48,3 +48,12 @@ Page: https://www.denofgeek.com/tv/how-stranger-things-created-iconic-vecna/
 Image: https://www.denofgeek.com/wp-content/uploads/2022/06/Hands.jpg
 Downloaded 2026-09-08. Displayed in the shop and sampled as the color/bump texture
 on the game's original 3D hand mesh. The photo is not covered by CC0 model licenses.
+
+## Druga Strona — tło otoczenia
+
+- Plik: `upside-down.jpg` (1200 × 600).
+- Źródło: Netflix Tudum, „The Secrets Behind Designing the Multiverse of Stranger Things”, 26 maja 2022.
+- Artykuł: https://www.netflix.com/tudum/articles/the-secrets-behind-designing-the-multiverse-of-stranger-things
+- Obraz: https://dnm.nflximg.net/api/v6/2DuQlx0fM4wd1nzqm5BFBi6ILa8/AAAAQUMEFaZM3GzW2S6hs7A7vgz7o1skGXsrZXh93Uu1EH_GxJY6-lvlW79eYsqh2PxZmMBSmkUqiQGtLTXxSs4ukU6uIaQvFK_l0UCNi1HVjOLHsk9N72AKKDsTW09vUIUMzKukehh1cUBM21a-Ozvsfxl5.jpg?r=81f
+- Pobrano: 8 września 2026, na prośbę użytkownika. Materiał Stranger Things / Netflix; nie jest oznaczony jako otwarta licencja.
+- Zastosowanie: fotograficzne tło na sferze wokół sceny; drzewa i pnącza to osobna geometria 3D.
