@@ -9,16 +9,19 @@ function rescueMarker(x,z,color,text){
  const ring=new THREE.Mesh(new THREE.RingGeometry(2.2,2.5,32),new THREE.MeshBasicMaterial({color,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.set(x,.22,z);group.add(ring);
  PolarityWorld.label(group,text,x,5,z,'#'+color.toString(16),5);return group;
 }
+function prepareRescue(m){
+ if(!m.marker){m.marker=rescueMarker(m.x,m.z,0xff9977,m.title.toUpperCase());m.safeMarker=rescueMarker(m.safe.x,m.safe.z,0x8bd7a2,'BEZPIECZNA STREFA');}
+ if(!m.actors.length){
+  for(const [role,positions] of [['attacker',m.enemies],['civilian',m.civilians]])for(const [index,[x,z]] of positions.entries()){
+   const e=addEntity('person',x,z,{name:role==='attacker'?'Napastnik':'Osoba do uratowania',model:role==='attacker'?1:0});
+   e.id=m.id+'-'+role+'-'+index;e.rescue=m;e.role=role;e.badge=PolarityWorld.label(e.mesh,role==='attacker'?'NAPASTNIK':'RATUJ MNIE',0,2.5,0,role==='attacker'?'#ff9977':'#8bd7a2',2);m.actors.push(e);
+  }
+ }
+}
 function startRescue(id){
  if(mode!=='play'||activeRescue)return;
  const m=rescueMissions.find(m=>m.id===id);if(!m||m.state==='success')return;
- if(!m.marker){m.marker=rescueMarker(m.x,m.z,0xff9977,m.title.toUpperCase());m.safeMarker=rescueMarker(m.safe.x,m.safe.z,0x8bd7a2,'BEZPIECZNA STREFA');}
- if(!m.actors.length){
-  for(const [role,positions] of [['attacker',m.enemies],['civilian',m.civilians]])for(const [x,z] of positions){
-   const e=addEntity('person',x,z,{name:role==='attacker'?'Napastnik':'Osoba do uratowania',model:role==='attacker'?1:0});
-   e.rescue=m;e.role=role;e.badge=PolarityWorld.label(e.mesh,role==='attacker'?'NAPASTNIK':'RATUJ MNIE',0,2.5,0,role==='attacker'?'#ff9977':'#8bd7a2',2);m.actors.push(e);
-  }
- }
+ prepareRescue(m);
  for(const e of m.actors){resetEntity(e);e.removed=false;e.mesh.visible=true;e.defeated=false;e.rescueDefeated=false;e.safe=false;e.attackTime=2;e.badge.visible=true;}
  m.state='active';m.started=false;m.casualty=false;m.marker.visible=m.safeMarker.visible=true;activeRescue=m;
  toast(m.title+': dotrzyj do znacznika. Pokonaj napastników i eskortuj ludzi do zielonego koła.');updateRescueUI();

@@ -50,3 +50,9 @@ Efekt pa-pa wczytuje się przed startem gry i pomija ciszę na początku nagrani
 Pokonana postać znika natychmiast i po 2 sekundach gry odradza się przy miejscu
 startu bohatera, w wolnym punkcie. Pokonani napastnicy po odrodzeniu nie wracają
 do walki; zaliczenie przeciwników i porażka po utracie zakładnika pozostają zapisane.
+
+Postępy zapisują się co sekundę, przy pauzie i opuszczaniu strony w tej przeglądarce.
+Kontynuacja przywraca punkty, zadania, aktywne i ukończone misje, pozycję, lot,
+amunicję i stan świata, w tym trzymane przedmioty i odradzające się postacie.
+Zapis jest lokalny: nie przenosi się między urządzeniami, a wyczyszczenie danych
+strony go usuwa. Dotychczasowy rekord i ustawienia zostają zachowane.
