@@ -45,3 +45,8 @@ Nagrody: bank 800 pkt, park 600 pkt. Po porażce przycisk „Ponów” rozpoczyn
 Przy obezwładnieniu postaci odtwarza się „Teletubisie mówią papa” z nagrania
 wskazanego przez użytkownika (źródło w `public/i-am-polarity/assets/SOURCES.md`).
 Efekt respektuje wyciszenie i zatrzymuje się po włączeniu pauzy.
+
+Efekt pa-pa wczytuje się przed startem gry i pomija ciszę na początku nagrania.
+Pokonana postać znika natychmiast i po 2 sekundach gry odradza się przy miejscu
+startu bohatera, w wolnym punkcie. Pokonani napastnicy po odrodzeniu nie wracają
+do walki; zaliczenie przeciwników i porażka po utracie zakładnika pozostają zapisane.

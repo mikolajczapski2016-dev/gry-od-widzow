@@ -1,5 +1,6 @@
 'use strict';
 const $=id=>document.getElementById(id), clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const spawnPoint={x:0,z:16};
 const player={x:0,y:0,z:16,yaw:0,pitch:-.04,vy:0,grounded:true,flying:false};
 const entities=[],keys=new Set(),actionPointers=new Map(),stickState={x:0,y:0,id:null};
 let renderer,scene,camera,hands,colliders=[],ready=false,mode='menu',settingsFrom='menu',held=null,target=null;
@@ -18,8 +19,12 @@ let knockoutBuffer=null,knockoutLoading=null,knockoutSource=null,knockoutRequest
 async function prepareKnockoutSound(){
  try{
   if(!audio||audio.state==='closed')audio=new(window.AudioContext||window.webkitAudioContext)();
-  if(audio.state!=='running')await audio.resume();
-  if(!knockoutLoading)knockoutLoading=fetch('assets/teletubisie-papa.m4a').then(r=>{if(!r.ok)throw new Error('Audio '+r.status);return r.arrayBuffer();}).then(bytes=>audio.decodeAudioData(bytes)).then(buffer=>{knockoutBuffer=buffer;return buffer;}).catch(error=>{knockoutLoading=null;console.warn('Nie udało się wczytać efektu pa-pa',error);return null;});
+  if(!knockoutLoading)knockoutLoading=fetch('assets/teletubisie-papa.m4a').then(r=>{if(!r.ok)throw new Error('Audio '+r.status);return r.arrayBuffer();}).then(bytes=>audio.decodeAudioData(bytes)).then(buffer=>{// Remove quiet lead-in so the effect is audible from the first moment.
+   let first=0;const samples=buffer.getChannelData(0),windowSize=Math.ceil(buffer.sampleRate*.01);
+   for(let i=0;i<samples.length;i+=windowSize){let energy=0;for(let j=i;j<Math.min(i+windowSize,samples.length);j++)energy+=samples[j]*samples[j];if(Math.sqrt(energy/windowSize)>.012){first=Math.max(0,i-windowSize);break;}}
+   const trimmed=audio.createBuffer(buffer.numberOfChannels,buffer.length-first,buffer.sampleRate);
+   for(let c=0;c<buffer.numberOfChannels;c++)trimmed.copyToChannel(buffer.getChannelData(c).subarray(first),c);
+   knockoutBuffer=trimmed;return trimmed;}).catch(error=>{knockoutLoading=null;console.warn('Nie udało się wczytać efektu pa-pa',error);return null;});
   return await knockoutLoading;
  }catch{return null;}
 }
@@ -55,7 +60,11 @@ function scare(){for(const e of entities)if(e.person&&!e.worker&&Math.hypot(e.x-
 function hurt(e,amount){
  if(!e.person||e.removed||e.defeated||e.safe)return;
  const wasAlive=e.health>0;e.health=Math.max(0,e.health-amount);e.scared=6;e.hit=.3;
- if(e.health===0){e.knocked=8;if(e.role==='attacker'){e.defeated=true;if(held===e)held=null;}if(wasAlive){playKnockoutSound();toast(e.role==='attacker'?'Napastnik obezwładniony!':'Postać obezwładniona. Za chwilę wróci do siebie.');}}
+ if(e.health===0&&wasAlive){
+  playKnockoutSound();e.respawnTime=2;e.removed=true;e.mesh.visible=false;e.vx=e.vy=e.vz=0;if(held===e)held=null;
+  if(e.rescue&&!e.retired){if(e.role==='attacker')e.rescueDefeated=true;else if(e.rescue===activeRescue)e.rescue.casualty=true;}
+  toast('Postać wróci za 2 sekundy przy miejscu startu.');
+ }
  else e.knocked=Math.max(e.knocked,1.2);flash(center(e));
 }
 function grab(){
@@ -130,17 +139,27 @@ function updatePlayer(dt){
  if(held){const dir=forward(),origin=eye(),range=Math.min(3.1,Math.max(1.1,wallDistance(origin,dir,4)-held.radius-.25)),desired=origin.addScaledVector(dir,range);held.x+=(desired.x-held.x)*Math.min(1,dt*14);held.z+=(desired.z-held.z)*Math.min(1,dt*14);held.y+=(Math.max(.25,desired.y-held.height*.5)-held.y)*Math.min(1,dt*14);held.angle=-player.yaw;held.vx=held.vy=held.vz=0;}
  const sway=len>.1?Math.sin(time*9)*.013:Math.sin(time*2)*.004;hands.root.position.y=sway;hands.left.rotation.x=held?-.2:Math.sin(time*2)*.025;hands.right.position.z=-.57+recoil*.45;hands.pistol.visible=tool==='pistol';hands.right.rotation.x=reloadTime>0?-.65:0;
 }
-function resetEntity(e){e.x=e.startX;e.z=e.startZ;e.y=0;e.vx=e.vy=e.vz=0;e.health=75;e.knocked=0;e.thrown=0;e.spin=0;e.mesh.rotation.set(0,Math.PI,0);if(held===e)held=null;}
+function resetEntity(e){e.x=e.startX;e.z=e.startZ;e.y=0;e.vx=e.vy=e.vz=0;e.health=75;e.knocked=0;e.thrown=0;e.spin=0;e.respawnTime=0;e.retired=false;e.scared=0;e.hit=0;e.mesh.rotation.set(0,Math.PI,0);if(held===e)held=null;}
+function respawnPerson(e){
+ let position=null;
+ for(let ring=1;ring<=8&&!position;ring++)for(let i=0;i<ring*8;i++){
+  const angle=i/(ring*8)*Math.PI*2,x=spawnPoint.x+Math.cos(angle)*ring*1.3,z=spawnPoint.z+Math.sin(angle)*ring*1.3;
+  if(!solid(x,z,.5)&&Math.hypot(x-player.x,z-player.z)>1&& !entities.some(other=>other!==e&&!other.removed&&Math.hypot(other.x-x,other.z-z)<other.radius+.6)){position={x,z};break;}
+ }
+ if(!position){e.respawnTime=.25;return;}
+ resetEntity(e);e.x=position.x;e.z=position.z;e.removed=false;e.defeated=false;e.safe=false;e.retired=!!e.rescue;e.mesh.visible=true;e.mesh.position.set(e.x,0,e.z);if(e.badge)e.badge.visible=false;
+ PolarityWorld.animate(e.mesh,'Idle',0);
+}
 function updateEntities(dt){
- for(const e of entities){if(e.removed)continue;if(e.defeated){PolarityWorld.animate(e.mesh,'Death',dt);continue;}e.scared=Math.max(0,e.scared-dt);e.hit=Math.max(0,e.hit-dt);e.thrown=Math.max(0,e.thrown-dt);
+ for(const e of entities){if(e.respawnTime>0){e.respawnTime=Math.max(0,e.respawnTime-dt);if(e.respawnTime===0)respawnPerson(e);continue;}if(e.removed)continue;e.scared=Math.max(0,e.scared-dt);e.hit=Math.max(0,e.hit-dt);e.thrown=Math.max(0,e.thrown-dt);
   if(e!==held){
    if(e.rescue)rescueMotion(e,dt);
-   if(e.person&&!e.rescue&&e.knocked<=0&&e.y<.1&&!e.thrown&&!e.worker){let dx=Math.sin(time*.3+e.phase),dz=Math.cos(time*.3+e.phase);if(e.scared){const d=Math.hypot(e.x-player.x,e.z-player.z)||1;dx=(e.x-player.x)/d;dz=(e.z-player.z)/d;}const speed=e.scared?3.6:.65;move(e,dx*speed*dt,dz*speed*dt,e.radius);e.angle=Math.atan2(dx,dz);}
+   if(e.person&&(!e.rescue||e.retired)&&e.knocked<=0&&e.y<.1&&!e.thrown&&!e.worker){let dx=Math.sin(time*.3+e.phase),dz=Math.cos(time*.3+e.phase);if(e.scared){const d=Math.hypot(e.x-player.x,e.z-player.z)||1;dx=(e.x-player.x)/d;dz=(e.z-player.z)/d;}const speed=e.scared?3.6:.65;move(e,dx*speed*dt,dz*speed*dt,e.radius);e.angle=Math.atan2(dx,dz);}
    const velocity=Math.hypot(e.vx,e.vz);if(move(e,e.vx*dt,e.vz*dt,e.radius)){e.vx*=-.3;e.vz*=-.3;if(e.person&&velocity>9)hurt(e,20);}
    e.vy-=12*dt;e.y+=e.vy*dt;if(e.y<=floorAt(e)){if(e.person&&e.vy<-10)hurt(e,15);e.y=floorAt(e);e.vy=Math.abs(e.vy)>2&&!e.person?-e.vy*.22:0;const friction=Math.exp(-dt*5);e.vx*=friction;e.vz*=friction;e.spin*=friction;}
    if(e.thrown&&velocity>4)for(const other of entities){if(other===e||other===held||other.removed||Math.abs(other.y-e.y)>2)continue;if(Math.hypot(other.x-e.x,other.z-e.z)<e.radius+other.radius){other.vx+=e.vx*.4;other.vz+=e.vz*.4;other.vy=2;if(other.person)hurt(other,20);e.vx*=-.25;e.vz*=-.25;e.thrown=0;break;}}
   }
-  if(e.person){if(e.knocked>0){e.knocked-=dt;if(e.knocked<=0&&e!==held){if(!e.rescue)e.health=75;e.mesh.rotation.z=0;}}const state=e.knocked>0?(e.health===0?'Death':'HitRecieve'):e===held?'Wave':e.rescue?(e.moving?'Run':'Idle'):e.worker?'Idle':e.scared?'Run':'Walk';PolarityWorld.animate(e.mesh,state,dt);}
+  if(e.person){if(e.knocked>0){e.knocked-=dt;if(e.knocked<=0&&e!==held){if(!e.rescue)e.health=75;e.mesh.rotation.z=0;}}const state=e.knocked>0?(e.health===0?'Death':'HitRecieve'):e===held?'Wave':e.rescue&&!e.retired?(e.moving?'Run':'Idle'):e.worker?'Idle':e.scared?'Run':'Walk';PolarityWorld.animate(e.mesh,state,dt);}
   if(e.y>100||e.y<-5||!Number.isFinite(e.x+e.y+e.z))resetEntity(e);
   e.mesh.position.set(e.x,e.y,e.z);e.mesh.rotation.y=e.angle;if(!e.person&&e.thrown)e.mesh.rotation.z+=e.spin*dt;
  }
@@ -187,4 +206,4 @@ let last=0,hudTime=0;function frame(now){const dt=Math.min((now-last)/1000||0,.0
  if(ready&&(mode==='play'||needsRender)){renderer.render(scene,camera);needsRender=false;}requestAnimationFrame(frame);}
 function resize(){if(!renderer)return;renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();needsRender=true;}
 soundLabel();
-(async()=>{try{renderer=new THREE.WebGLRenderer({canvas:$('game'),antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.05,240);camera.position.set(player.x,1.66,player.z);camera.rotation.x=player.pitch;await PolarityWorld.load();build();resize();window.addEventListener('resize',resize);ready=true;$('start').disabled=false;$('start').textContent='URUCHOM SWOJE MOCE ↗';updateEntities(0);updateUI();requestAnimationFrame(frame);$('game').addEventListener('webglcontextlost',event=>{event.preventDefault();ready=false;screen('menu');$('start').disabled=true;$('loadError').hidden=false;});}catch(error){console.error(error);$('loadError').hidden=false;$('start').disabled=true;}})();
+(async()=>{try{renderer=new THREE.WebGLRenderer({canvas:$('game'),antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.05,240);camera.position.set(player.x,1.66,player.z);camera.rotation.x=player.pitch;await Promise.all([PolarityWorld.load(),prepareKnockoutSound()]);build();resize();window.addEventListener('resize',resize);ready=true;$('start').disabled=false;$('start').textContent='URUCHOM SWOJE MOCE ↗';updateEntities(0);updateUI();requestAnimationFrame(frame);$('game').addEventListener('webglcontextlost',event=>{event.preventDefault();ready=false;screen('menu');$('start').disabled=true;$('loadError').hidden=false;});}catch(error){console.error(error);$('loadError').hidden=false;$('start').disabled=true;}})();
