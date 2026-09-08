@@ -39,3 +39,12 @@ Source: https://www.youtube.com/watch?v=HERXilqn4iE
 Downloaded 2026-09-08, original English audio (approximately 37 seconds).
 This fan song recording is separate from the CC0 character models and code licenses.
 It loops during the encounter and stops on victory, cancellation, mute or pause.
+
+# Vecna hand photograph
+
+`vecna-hand-reference.jpg`: behind-the-scenes photograph of the practical Vecna
+hand prosthetics, published with “How Stranger Things Created Its Iconic Vecna”.
+Page: https://www.denofgeek.com/tv/how-stranger-things-created-iconic-vecna/
+Image: https://www.denofgeek.com/wp-content/uploads/2022/06/Hands.jpg
+Downloaded 2026-09-08. Displayed in the shop and sampled as the color/bump texture
+on the game's original 3D hand mesh. The photo is not covered by CC0 model licenses.

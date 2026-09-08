@@ -59,7 +59,7 @@ strony go usuwa. Dotychczasowy rekord i ustawienia zostają zachowane.
 
 Sklep z rękawicami otwierasz przyciskiem „Sklep”. Punkty dają tyle samo monet;
 kupowanie nie obniża wyniku. Magnetyczna jest darmowa, lodowa kosztuje 150 monet
-(zamraża na 5 s), elektryczna 300 (piorun do 3 celów), ręka Vecny 500.
+(zamraża na 5 s), elektryczna 300 (piorun do 3 celów), ręka Vecny 2000.
 Zakupy i wybrana rękawica zapisują się automatycznie. Starszy zapis dostaje monety
 równe dotychczasowemu wynikowi, bez utraty misji ani przedmiotów.
 
@@ -72,3 +72,7 @@ Trzy trafienia kończą atak; ofiara znika i odradza się zgodnie z zasadami gry
 „Mr Vecna” gra w pętli aż do pokonania ofiary lub przerwania transu. Pauza
 oraz wyciszenie zatrzymują muzykę. Można zapisać i wznowić trwający trans.
 Źródła inspiracji, filmiku i muzyki: `public/i-am-polarity/assets/SOURCES.md`.
+
+Ręka Vecny ma trójwymiarową dłoń, osobny kciuk, cztery długie palce, pazury
+oraz fakturę zaczerpniętą ze zdjęcia rekwizytu. To zdjęcie jest też w sklepie.
+Ręka Vecny kosztuje 2000 monet zdobywanych podczas gry.
