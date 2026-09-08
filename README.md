@@ -41,3 +41,7 @@ Strzałka i odległość prowadzą na miejsce. Napastnicy atakują po przybyciu 
 obezwładnij ich mocami lub pistoletem i uratuj obie osoby. Po pokonaniu napastników
 mieszkańcy idą do zielonej strefy; można też przenieść ich magnesem.
 Nagrody: bank 800 pkt, park 600 pkt. Po porażce przycisk „Ponów” rozpoczyna nową próbę.
+
+Przy obezwładnieniu postaci odtwarza się „Teletubisie mówią papa” z nagrania
+wskazanego przez użytkownika (źródło w `public/i-am-polarity/assets/SOURCES.md`).
+Efekt respektuje wyciszenie i zatrzymuje się po włączeniu pauzy.

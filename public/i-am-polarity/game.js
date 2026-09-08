@@ -14,6 +14,24 @@ async function beep(f=450,length=.12,type='sine'){
  if(!sound)return;try{try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch{}if(!audio||audio.state==='closed')audio=new(window.AudioContext||window.webkitAudioContext)();if(audio.state!=='running')await audio.resume();if(!sound||document.hidden)return;
  const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(Math.max(45,f*.4),audio.currentTime+length);g.gain.setValueAtTime(.045,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+length);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+length);o.onended=()=>{o.disconnect();g.disconnect();};}catch{}
 }
+let knockoutBuffer=null,knockoutLoading=null,knockoutSource=null,knockoutRequest=0;
+async function prepareKnockoutSound(){
+ try{
+  if(!audio||audio.state==='closed')audio=new(window.AudioContext||window.webkitAudioContext)();
+  if(audio.state!=='running')await audio.resume();
+  if(!knockoutLoading)knockoutLoading=fetch('assets/teletubisie-papa.m4a').then(r=>{if(!r.ok)throw new Error('Audio '+r.status);return r.arrayBuffer();}).then(bytes=>audio.decodeAudioData(bytes)).then(buffer=>{knockoutBuffer=buffer;return buffer;}).catch(error=>{knockoutLoading=null;console.warn('Nie udało się wczytać efektu pa-pa',error);return null;});
+  return await knockoutLoading;
+ }catch{return null;}
+}
+function stopKnockoutSound(){knockoutRequest++;if(knockoutSource){knockoutSource.stop();knockoutSource=null;}}
+async function playKnockoutSound(){
+ if(!sound||mode!=='play'||document.hidden)return;
+ const request=++knockoutRequest,buffer=knockoutBuffer||await prepareKnockoutSound();
+ if(!buffer||request!==knockoutRequest||!sound||mode!=='play'||document.hidden)return;
+ if(knockoutSource)knockoutSource.stop();
+ const source=audio.createBufferSource(),gain=audio.createGain();source.buffer=buffer;gain.gain.value=.65;source.connect(gain);gain.connect(audio.destination);knockoutSource=source;
+ source.onended=()=>{source.disconnect();gain.disconnect();if(knockoutSource===source)knockoutSource=null;};source.start();
+}
 function forward(){return new THREE.Vector3(Math.sin(player.yaw)*Math.cos(player.pitch),Math.sin(player.pitch),-Math.cos(player.yaw)*Math.cos(player.pitch));}
 function eye(){return new THREE.Vector3(player.x,player.y+1.66,player.z);}
 function solid(x,z,r=.35,y=0){return Math.abs(x)>PolarityWorld.bounds.x-r||Math.abs(z)>PolarityWorld.bounds.z-r||colliders.some(b=>y<b.h-.01&&Math.abs(x-b.x)<b.w/2+r&&Math.abs(z-b.z)<b.d/2+r);}
@@ -37,7 +55,7 @@ function scare(){for(const e of entities)if(e.person&&!e.worker&&Math.hypot(e.x-
 function hurt(e,amount){
  if(!e.person||e.removed||e.defeated||e.safe)return;
  const wasAlive=e.health>0;e.health=Math.max(0,e.health-amount);e.scared=6;e.hit=.3;
- if(e.health===0){e.knocked=8;if(e.role==='attacker'){e.defeated=true;if(held===e)held=null;}if(wasAlive)toast(e.role==='attacker'?'Napastnik obezwładniony!':'Postać obezwładniona. Za chwilę wróci do siebie.');}
+ if(e.health===0){e.knocked=8;if(e.role==='attacker'){e.defeated=true;if(held===e)held=null;}if(wasAlive){playKnockoutSound();toast(e.role==='attacker'?'Napastnik obezwładniony!':'Postać obezwładniona. Za chwilę wróci do siebie.');}}
  else e.knocked=Math.max(e.knocked,1.2);flash(center(e));
 }
 function grab(){
@@ -145,11 +163,11 @@ function updateUI(){
  $('task1').classList.toggle('done',recycled===3);$('task2').classList.toggle('done',rescued);$('task3').classList.toggle('done',charged===2);document.querySelector('[data-action="use"]').textContent=tool==='pistol'?'STRZELAJ':'UŻYJ MOCY';
 }
 function releaseInputs(){keys.clear();actionPointers.clear();stickState.x=stickState.y=0;stickState.id=null;lookPointer=null;$('knob').style.transform='';}
-function screen(name){mode=name;releaseInputs();needsRender=true;for(const id of ['menu','pause','settings'])$(id).hidden=id!==name;$('hud').hidden=name!=='play';if(name!=='play'){if(document.pointerLockElement)document.exitPointerLock();$(name).querySelector('button')?.focus({preventScroll:true});}}
-$('start').onclick=()=>{if(ready){screen('play');beep(600);}};$('resume').onclick=()=>{screen('play');};$('pauseButton').onclick=()=>screen('pause');$('menuButton').onclick=()=>{$('start').textContent='WRÓĆ DO DZIELNICY';screen('menu');};
+function screen(name){mode=name;releaseInputs();needsRender=true;for(const id of ['menu','pause','settings'])$(id).hidden=id!==name;$('hud').hidden=name!=='play';if(name!=='play'){stopKnockoutSound();if(document.pointerLockElement)document.exitPointerLock();$(name).querySelector('button')?.focus({preventScroll:true});}}
+$('start').onclick=()=>{if(ready){screen('play');if(sound)prepareKnockoutSound();beep(600);}};$('resume').onclick=()=>{screen('play');};$('pauseButton').onclick=()=>screen('pause');$('menuButton').onclick=()=>{$('start').textContent='WRÓĆ DO DZIELNICY';screen('menu');};
 for(const b of document.querySelectorAll('.open-settings'))b.onclick=()=>{settingsFrom=mode;screen('settings');};$('closeSettings').onclick=()=>screen(settingsFrom);
 function soundLabel(){$('sound').textContent='Dźwięk: '+(sound?'włączony':'wyłączony');$('sound').setAttribute('aria-pressed',String(sound));}
-$('sound').onclick=()=>{sound=!sound;soundLabel();save();if(sound)beep();};$('sensitivity').value=sensitivity;$('sensitivity').oninput=event=>{sensitivity=Number(event.target.value);save();};
+$('sound').onclick=()=>{sound=!sound;if(!sound)stopKnockoutSound();soundLabel();save();if(sound)beep();};$('sensitivity').value=sensitivity;$('sensitivity').oninput=event=>{sensitivity=Number(event.target.value);save();};
 $('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else $('fullscreen').textContent='Pełny ekran niedostępny';}catch{$('fullscreen').textContent='Pełny ekran niedostępny';}};
 window.addEventListener('keydown',event=>{if(mode!=='play'){if(event.code==='KeyP'&&mode==='pause')screen('play');return;}if(event.ctrlKey||event.metaKey||event.altKey)return;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(event.code))event.preventDefault();keys.add(event.code);if(event.repeat)return;if(['Escape','KeyP'].includes(event.code)){screen('pause');return;}if(event.code==='KeyR')reload();const map={KeyE:'grab',KeyF:'throw',KeyG:'switch',Space:'jump',KeyV:'fly'};if(map[event.code])action(map[event.code]);});
 window.addEventListener('keyup',event=>keys.delete(event.code));
