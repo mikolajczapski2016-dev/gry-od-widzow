@@ -32,3 +32,6 @@ powiązana z twórcami I Am Cat ani I Am Monkey.
 Mapa ma 136 × 136 jednostek: dodatkowe ulice, zabudowę i park.
 Przycisk Lataj / Ląduj działa na komputerze i telefonie. W locie poruszaj się
 w kierunku patrzenia, aby zmieniać wysokość; po wyłączeniu lotu opadasz na ziemię lub dach.
+
+Mieszkańcy pojawiają się także w 24 sektorach poza centralnym placem.
+Miejsca startowe są losowane spośród wolnych punktów, z dala od budynków i przedmiotów.

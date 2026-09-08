@@ -62,6 +62,24 @@ function action(name){if(mode!=='play')return;if(name==='fly')toggleFlight();if(
 function addEntity(type,x,z,options={}){
  const person=type==='person',mesh=person?PolarityWorld.character(scene,options.model||0):PolarityWorld.object(scene,type,options.color),e={type,name:options.name||({crate:'Metalowa skrzynia',cell:'Ogniwo energii',beam:'Stalowa belka',bench:'Ławka',barrel:'Metalowa beczka'}[type]),person,mesh,x,y:0,z,vx:0,vy:0,vz:0,startX:x,startZ:z,radius:person?.38:type==='beam'?1.7:type==='bench'?1.1:.55,height:person?1.85:type==='beam'?.7:1.1,health:75,knocked:0,scared:0,hit:0,thrown:0,spin:0,angle:Math.PI,worker:!!options.worker,removed:false,phase:Math.random()*6};mesh.position.set(x,0,z);entities.push(e);return e;
 }
+function populateNeighborhoods(){
+ // One resident in each outer map sector keeps every neighborhood populated.
+ const margin=3,columns=5,rows=5;
+ const width=(PolarityWorld.bounds.x-margin)*2/columns,depth=(PolarityWorld.bounds.z-margin)*2/rows;
+ let index=0;
+ for(let row=0;row<rows;row++)for(let column=0;column<columns;column++){
+  if(row===2&&column===2)continue; // The original square already has residents.
+  const candidates=[],left=-PolarityWorld.bounds.x+margin+column*width,top=-PolarityWorld.bounds.z+margin+row*depth;
+  for(let x=left+1;x<left+width-1;x+=2)for(let z=top+1;z<top+depth-1;z+=2){
+   if(solid(x,z,1)||Math.hypot(x-player.x,z-player.z)<2)continue;
+   if(entities.some(e=>Math.hypot(e.x-x,e.z-z)<e.radius+1))continue;
+   candidates.push({x,z});
+  }
+  if(!candidates.length)continue;
+  const {x,z}=candidates[Math.floor(Math.random()*candidates.length)];
+  addEntity('person',x,z,{name:['Mieszkaniec','Przechodzień','Sąsiad'][index%3],model:index%2});index++;
+ }
+}
 function build(){
  colliders=PolarityWorld.create(scene);
  for(const [x,z] of [[-4,2],[-7,-3],[-2,-6]])addEntity('crate',x,z);
@@ -69,6 +87,7 @@ function build(){
  addEntity('person',8,-6,{name:'Pracownik warsztatu',model:2,worker:true});
  for(const [i,p] of [[0,[0,8]],[1,[-5,7]],[2,[6,5]],[3,[-8,-5]],[4,[11,9]],[5,[-11,12]],[6,[5,-11]]])addEntity('person',p[0],p[1],{name:['Mieszkaniec','Przechodzień','Sąsiad'][i%3],model:i%2});
  for(const [x,z] of [[-34,32],[34,32],[-34,-42],[34,-42],[-20,44],[20,44]]){addEntity('barrel',x,z);addEntity('bench',x+3,z+2);}
+ populateNeighborhoods();
  hands=PolarityWorld.hands(camera);scene.add(camera);
 }
 function updatePlayer(dt){
