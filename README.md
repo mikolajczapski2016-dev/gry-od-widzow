@@ -35,3 +35,9 @@ w kierunku patrzenia, aby zmieniać wysokość; po wyłączeniu lotu opadasz na 
 
 Mieszkańcy pojawiają się także w 24 sektorach poza centralnym placem.
 Miejsca startowe są losowane spośród wolnych punktów, z dala od budynków i przedmiotów.
+
+Misje ratunkowe wybierasz przyciskami „Napad na bank” i „Ratunek w parku”.
+Strzałka i odległość prowadzą na miejsce. Napastnicy atakują po przybyciu bohatera;
+obezwładnij ich mocami lub pistoletem i uratuj obie osoby. Po pokonaniu napastników
+mieszkańcy idą do zielonej strefy; można też przenieść ich magnesem.
+Nagrody: bank 800 pkt, park 600 pkt. Po porażce przycisk „Ponów” rozpoczyna nową próbę.

@@ -3,3 +3,6 @@
 @media(max-height:500px){#missions{top:70px;max-width:215px}#missions b{font-size:11px}#missions p{font-size:9px;margin-top:5px}#toast{top:18%;font-size:11px}#targetLabel{font-size:10px}.panel{padding:24px}.status span{font-size:11px}.brand small{font-size:7px}.overlay{padding:15px}}
 
 #flyButton{background:#7ce0d9;color:#163544;min-width:76px;min-height:44px}#flyButton[aria-pressed="true"]{background:#f2d284}
+
+#rescuePanel{position:absolute;right:20px;top:95px;width:260px;background:#142e40e8;border-left:3px solid #ffb787;border-radius:0 12px 12px 0;padding:12px;pointer-events:auto}#rescuePanel b{font-size:13px}.rescue-buttons{display:flex;gap:6px;margin-top:8px}.rescue-buttons button{font-size:11px;padding:8px;min-height:44px;flex:1}#rescueStatus{font-size:11px;line-height:1.5;margin:8px 0 0}#rescuePanel button:disabled{cursor:default}
+@media(max-height:500px){#rescuePanel{top:72px;width:240px;padding:8px}#rescueStatus{font-size:10px;margin-top:5px}.rescue-buttons{margin-top:4px}.rescue-buttons button{padding:5px}#missions{max-width:200px}}

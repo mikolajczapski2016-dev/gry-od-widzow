@@ -23,7 +23,7 @@ function wallDistance(origin,dir,max=100){const ray=new THREE.Ray(origin,dir);le
 function center(e){return new THREE.Vector3(e.x,e.y+(e.person?.95:e.height/2),e.z);}
 function aim(assist=true,range=24){
  const origin=eye(),direction=forward(),wall=wallDistance(origin,direction,range);let result=null,bestDistance=range;
- for(const e of entities){if(e===held||e.removed)continue;const c=center(e),delta=c.clone().sub(origin),d=delta.length();if(d>range)continue;
+ for(const e of entities){if(e===held||e.removed||e.defeated||e.safe)continue;const c=center(e),delta=c.clone().sub(origin),d=delta.length();if(d>range)continue;
   const dot=delta.normalize().dot(direction),radius=e.person?.48:Math.max(.35,e.radius*.75),along=c.clone().sub(origin).dot(direction),miss=c.distanceTo(origin.clone().addScaledVector(direction,along));
   if(along<0||(!assist&&miss>radius)||(assist&&miss>radius&&dot<.96))continue;
   if(wallDistance(origin,c.clone().sub(origin).normalize(),d+.1)<d-.3)continue;
@@ -34,7 +34,12 @@ function aim(assist=true,range=24){
 function beam(a,b,color=0x79f0e5,life=.18){const geometry=new THREE.BufferGeometry().setFromPoints([a,b]);const line=new THREE.Line(geometry,new THREE.LineBasicMaterial({color,transparent:true}));scene.add(line);effects.push({mesh:line,life,total:life});}
 function flash(position,color=0xffdf9d){const m=new THREE.Mesh(new THREE.SphereGeometry(.13,8,6),new THREE.MeshBasicMaterial({color,transparent:true}));m.position.copy(position);scene.add(m);effects.push({mesh:m,life:.16,total:.16});}
 function scare(){for(const e of entities)if(e.person&&!e.worker&&Math.hypot(e.x-player.x,e.z-player.z)<18)e.scared=6;}
-function hurt(e,amount){if(!e.person||e.removed)return;e.health=Math.max(0,e.health-amount);e.scared=6;e.hit=.3;if(e.health===0){e.knocked=8;toast('Postać obezwładniona. Za chwilę wróci do siebie.');}else e.knocked=Math.max(e.knocked,1.2);flash(center(e));}
+function hurt(e,amount){
+ if(!e.person||e.removed||e.defeated||e.safe)return;
+ const wasAlive=e.health>0;e.health=Math.max(0,e.health-amount);e.scared=6;e.hit=.3;
+ if(e.health===0){e.knocked=8;if(e.role==='attacker'){e.defeated=true;if(held===e)held=null;}if(wasAlive)toast(e.role==='attacker'?'Napastnik obezwładniony!':'Postać obezwładniona. Za chwilę wróci do siebie.');}
+ else e.knocked=Math.max(e.knocked,1.2);flash(center(e));
+}
 function grab(){
  if(held){held.vx=held.vz=held.vy=0;toast('Puszczasz: '+held.name);held=null;return;}
  const e=aim(true,18);if(!e){toast('Spójrz celownikiem na człowieka lub przedmiot.');return;}
@@ -109,19 +114,21 @@ function updatePlayer(dt){
 }
 function resetEntity(e){e.x=e.startX;e.z=e.startZ;e.y=0;e.vx=e.vy=e.vz=0;e.health=75;e.knocked=0;e.thrown=0;e.spin=0;e.mesh.rotation.set(0,Math.PI,0);if(held===e)held=null;}
 function updateEntities(dt){
- for(const e of entities){if(e.removed)continue;e.scared=Math.max(0,e.scared-dt);e.hit=Math.max(0,e.hit-dt);e.thrown=Math.max(0,e.thrown-dt);
+ for(const e of entities){if(e.removed)continue;if(e.defeated){PolarityWorld.animate(e.mesh,'Death',dt);continue;}e.scared=Math.max(0,e.scared-dt);e.hit=Math.max(0,e.hit-dt);e.thrown=Math.max(0,e.thrown-dt);
   if(e!==held){
-   if(e.person&&e.knocked<=0&&e.y<.1&&!e.thrown&&!e.worker){let dx=Math.sin(time*.3+e.phase),dz=Math.cos(time*.3+e.phase);if(e.scared){const d=Math.hypot(e.x-player.x,e.z-player.z)||1;dx=(e.x-player.x)/d;dz=(e.z-player.z)/d;}const speed=e.scared?3.6:.65;move(e,dx*speed*dt,dz*speed*dt,e.radius);e.angle=Math.atan2(dx,dz);}
+   if(e.rescue)rescueMotion(e,dt);
+   if(e.person&&!e.rescue&&e.knocked<=0&&e.y<.1&&!e.thrown&&!e.worker){let dx=Math.sin(time*.3+e.phase),dz=Math.cos(time*.3+e.phase);if(e.scared){const d=Math.hypot(e.x-player.x,e.z-player.z)||1;dx=(e.x-player.x)/d;dz=(e.z-player.z)/d;}const speed=e.scared?3.6:.65;move(e,dx*speed*dt,dz*speed*dt,e.radius);e.angle=Math.atan2(dx,dz);}
    const velocity=Math.hypot(e.vx,e.vz);if(move(e,e.vx*dt,e.vz*dt,e.radius)){e.vx*=-.3;e.vz*=-.3;if(e.person&&velocity>9)hurt(e,20);}
    e.vy-=12*dt;e.y+=e.vy*dt;if(e.y<=floorAt(e)){if(e.person&&e.vy<-10)hurt(e,15);e.y=floorAt(e);e.vy=Math.abs(e.vy)>2&&!e.person?-e.vy*.22:0;const friction=Math.exp(-dt*5);e.vx*=friction;e.vz*=friction;e.spin*=friction;}
    if(e.thrown&&velocity>4)for(const other of entities){if(other===e||other===held||other.removed||Math.abs(other.y-e.y)>2)continue;if(Math.hypot(other.x-e.x,other.z-e.z)<e.radius+other.radius){other.vx+=e.vx*.4;other.vz+=e.vz*.4;other.vy=2;if(other.person)hurt(other,20);e.vx*=-.25;e.vz*=-.25;e.thrown=0;break;}}
   }
-  if(e.person){if(e.knocked>0){e.knocked-=dt;if(e.knocked<=0&&e!==held){e.health=75;e.mesh.rotation.z=0;}}const state=e.knocked>0?(e.health===0?'Death':'HitRecieve'):e===held?'Wave':e.worker?'Idle':e.scared?'Run':'Walk';PolarityWorld.animate(e.mesh,state,dt);}
+  if(e.person){if(e.knocked>0){e.knocked-=dt;if(e.knocked<=0&&e!==held){if(!e.rescue)e.health=75;e.mesh.rotation.z=0;}}const state=e.knocked>0?(e.health===0?'Death':'HitRecieve'):e===held?'Wave':e.rescue?(e.moving?'Run':'Idle'):e.worker?'Idle':e.scared?'Run':'Walk';PolarityWorld.animate(e.mesh,state,dt);}
   if(e.y>100||e.y<-5||!Number.isFinite(e.x+e.y+e.z))resetEntity(e);
   e.mesh.position.set(e.x,e.y,e.z);e.mesh.rotation.y=e.angle;if(!e.person&&e.thrown)e.mesh.rotation.z+=e.spin*dt;
  }
 }
 function updateMissions(){
+ updateRescueMissions();
  for(const e of entities){if(e.removed||e===held||e.y>1.2)continue;
   if(e.type==='crate'&&Math.hypot(e.x+12,e.z+14)<2.3){e.removed=true;e.mesh.visible=false;recycled++;points(100);toast('Skrzynia oddana do recyklingu! '+recycled+'/3');beep(850,.2);}
   if(e.type==='cell'&&Math.hypot(e.x,e.z+17)<2.3){e.removed=true;e.mesh.visible=false;charged++;points(150);toast('Generator: '+charged+'/2 ogniwa!');beep(950,.2);}
@@ -130,6 +137,7 @@ function updateMissions(){
  if(recycled===3&&charged===2&&rescued&&!missionAnnounced){missionAnnounced=true;points(500);toast('DZIELNICA URATOWANA! Możesz dalej bawić się mocami.');}
 }
 function updateUI(){
+ updateRescueUI();
  target=aim(true,18);$('crosshair').classList.toggle('active',!!target);$('targetLabel').textContent=target?target.name+' · E / Chwyć':'';
  $('heldLabel').textContent=held?'TRZYMASZ: '+held.name+' · F / Rzuć':'';
  $('score').textContent=score+' pkt';$('toolLabel').textContent=tool==='magnet'?'MAGNES':reloadTime?'PRZEŁADOWANIE…':'PISTOLET · '+ammo+'/12';

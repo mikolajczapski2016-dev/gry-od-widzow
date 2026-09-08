@@ -71,6 +71,7 @@ const PolarityWorld = (() => {
    mesh(scene,new THREE.CylinderGeometry(.2,.3,3,10),material(0x77624d),x,1.5,z);
    mesh(scene,sphere,material(0x688e68),x,4,z,2,2.4,2);
   }
+  label(scene,'BANK POLARITY',48,7,-25,'#ffe3a3',6);
   // A visible boundary keeps the playable area easy to recognize from the air.
   for(const x of [-69,69])box(scene,x,.5,0,1,1,140,0x9bafa9);
   for(const z of [-69,69])box(scene,0,.5,z,140,1,1,0x9bafa9);
