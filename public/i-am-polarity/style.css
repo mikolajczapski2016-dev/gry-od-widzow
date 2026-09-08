@@ -12,3 +12,5 @@
 @media(max-height:500px){.glove-art{height:48px;font-size:40px}.normal-label,.realm-label{top:69px;font-size:8px}.curse-info{top:99px}.curse-info b{font-size:11px}.curse-info small{font-size:8px}}
 
 .glove-art{position:relative;overflow:hidden;border-radius:10px}.glove-art .vecna-reference{width:100%;height:100%;object-fit:cover;object-position:right 70%;transform:scale(3);transform-origin:100% 80%}
+
+.vecna-finale #crosshair,.vecna-finale #targetLabel,.vecna-finale #missions,.vecna-finale #rescuePanel,.vecna-finale #touch,.vecna-finale .desktop-help,.vecna-finale #heldLabel,.vecna-finale #openShop,.vecna-finale #flyButton{display:none}

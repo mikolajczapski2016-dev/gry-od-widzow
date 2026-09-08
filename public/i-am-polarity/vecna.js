@@ -1,5 +1,33 @@
 'use strict';
 let curse=null,realm=null,vecnaBuffer=null,vecnaSource=null,vecnaLoading=null;
+let vecnaFinale=null;
+function startVecnaFinale(e){
+ const figure=PolarityWorld.character(scene,e.modelIndex||0);figure.position.set(e.x,0,e.z);figure.rotation.y=e.angle;
+ const materials=[];figure.traverse(m=>{if(m.isMesh){m.material=m.material.clone();m.material.transparent=true;materials.push(m.material);}});
+ const puddle=new THREE.Mesh(new THREE.CircleGeometry(1,48),new THREE.MeshStandardMaterial({color:0x9b1539,emissive:0x3d0010,roughness:.22,transparent:true,opacity:.9,depthWrite:false}));
+ puddle.rotation.x=-Math.PI/2;puddle.position.set(e.x,.17,e.z);puddle.scale.setScalar(.05);scene.add(puddle);
+ const view=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.05,240),focus=new THREE.Vector3(e.x,.9,e.z);
+ // Reuse the unobstructed observer angle from the trance, adjusted toward ground level.
+ const origin=realm.observer.position.clone();origin.y=Math.max(2,Math.min(origin.y,4));
+ const direction=focus.clone().sub(origin),distance=direction.length();
+ if(wallDistance(origin,direction.normalize(),distance)<distance-.2)origin.copy(realm.observer.position);
+ view.position.copy(origin);view.lookAt(focus);
+ vecnaFinale={elapsed:0,figure,materials,puddle,camera:view,origin,x:e.x,z:e.z};
+ hands.root.visible=false;document.body.classList.add('vecna-finale');releaseInputs();toast('Ofiara rozpływa się w czerwony płyn…');
+}
+function updateVecnaFinale(dt){
+ const f=vecnaFinale;if(!f)return;f.elapsed+=dt;
+ const melt=THREE.MathUtils.smoothstep(f.elapsed,.45,2.8);
+ f.figure.scale.set(1+melt*.8,Math.max(.015,1-melt),1+melt*.8);
+ for(const material of f.materials){material.color.lerp(new THREE.Color(0x9b1539),Math.min(1,dt*4));material.opacity=1-melt;}
+ f.puddle.scale.set( .1+melt*1.65,.1+melt*1.25,1);f.puddle.material.opacity=.9*(1-THREE.MathUtils.smoothstep(f.elapsed,3.1,3.8));
+ f.camera.position.copy(f.origin);f.camera.lookAt(f.x,.9*(1-melt)+.08,f.z);
+ if(f.elapsed>=3.8){
+  scene.remove(f.figure,f.puddle);f.figure.userData.mixer.stopAllAction();f.figure.userData.mixer.uncacheRoot(f.figure.userData.model);
+  for(const material of f.materials)material.dispose();f.puddle.geometry.dispose();f.puddle.material.dispose();
+  vecnaFinale=null;hands.root.visible=true;document.body.classList.remove('vecna-finale');releaseInputs();toast('Wracasz do gry. +50 monet.');
+ }
+}
 async function prepareVecnaMusic(){
  try{
   if(!audio||audio.state==='closed')audio=new(window.AudioContext||window.webkitAudioContext)();
@@ -117,7 +145,7 @@ function beginCurse(e,saved=null){
 function endCurse(won=false){
  if(!curse)return;const old=curse;curse=null;const e=old.victim;e.cursed=false;e.y=old.preY;e.angle=old.preAngle;e.mesh.rotation.set(0,e.angle,0);e.mesh.position.set(e.x,e.y,e.z);old.ghost.visible=false;
  for(const p of old.pose)p.bone.quaternion.copy(p.rotation);if(e.curseEyes)e.curseEyes.visible=false;PolarityWorld.animate(e.mesh,'Idle',0);hands.root.visible=true;document.body.classList.remove('in-curse');$('curseHUD').hidden=true;syncVecnaMusic();releaseInputs();resize();
- if(won){hurt(e,75);points(50);toast('Vecna dopadł ofiarę! +50 monet. Postać odrodzi się przy starcie.');}
+ if(won){startVecnaFinale(e);hurt(e,75);points(50);toast('Ofiara rozpływa się w czerwony płyn… +50 monet.');}
  else toast('Trans przerwany. Wracasz do normalnego świata.');
  updateUI();saveProgress();
 }
@@ -164,7 +192,7 @@ function updateCurse(dt){
  if(keys.has('KeyF')||keys.has('Mouse0')||[...actionPointers.values()].some(a=>a==='use'||a==='throw'))curseStrike();
 }
 function renderWorld(){
- if(!curse){renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);renderer.render(scene,camera);return;}
+ if(!curse){renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);if(vecnaFinale){vecnaFinale.camera.aspect=innerWidth/innerHeight;vecnaFinale.camera.updateProjectionMatrix();}renderer.render(scene,vecnaFinale?vecnaFinale.camera:camera);return;}
  const half=Math.floor(innerWidth/2);realm.observer.aspect=half/innerHeight;realm.observer.updateProjectionMatrix();realm.camera.aspect=(innerWidth-half)/innerHeight;realm.camera.updateProjectionMatrix();
  renderer.setScissorTest(true);renderer.setViewport(0,0,half,innerHeight);renderer.setScissor(0,0,half,innerHeight);renderer.render(scene,realm.observer);
  renderer.setViewport(half,0,innerWidth-half,innerHeight);renderer.setScissor(half,0,innerWidth-half,innerHeight);renderer.render(realm.scene,realm.camera);renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);
