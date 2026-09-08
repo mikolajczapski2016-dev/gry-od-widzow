@@ -21,6 +21,14 @@ function createRealm(){
  for(const b of colliders){PolarityWorld.box(world,b.x,b.h/2,b.z,b.w,b.h,b.d,0x584159);for(let y=2;y<b.h;y+=4)PolarityWorld.box(world,b.x,y,b.z+b.d/2+.04,b.w*.7,.04,.04,0x8e354d);}
  // The downloaded still wraps around the distant scenery; nearby geometry provides parallax.
  const backdropTexture=new THREE.TextureLoader().load('assets/upside-down.jpg');
+ // Sample the forest floor in the photo, then tile it across the walkable surface.
+ const floorTexture=backdropTexture.clone();floorTexture.colorSpace=THREE.SRGBColorSpace;
+ floorTexture.repeat.set(.2,.08);floorTexture.offset.set(.72,.01);
+ // TextureLoader completes asynchronously; share its image with the cropped material.
+ backdropTexture.onUpdate=()=>{if(backdropTexture.image&&floorTexture.image!==backdropTexture.image){floorTexture.image=backdropTexture.image;floorTexture.needsUpdate=true;}};
+ const floor=new THREE.InstancedMesh(new THREE.PlaneGeometry(6,6),new THREE.MeshStandardMaterial({map:floorTexture,bumpMap:floorTexture,bumpScale:.04,color:0xffffff,roughness:1}),576);
+ floor.name='upside-down-walkable-photo';const tile=new THREE.Object3D();
+ for(let i=0;i<576;i++){tile.position.set(-69+(i%24)*6,.012,-69+Math.floor(i/24)*6);tile.rotation.set(-Math.PI/2,0,(i%2)*Math.PI);tile.updateMatrix();floor.setMatrixAt(i,tile.matrix);}world.add(floor);
  backdropTexture.colorSpace=THREE.SRGBColorSpace;backdropTexture.wrapS=THREE.MirroredRepeatWrapping;backdropTexture.repeat.x=6;
  const backdrop=new THREE.Mesh(new THREE.SphereGeometry(140,96,40),new THREE.MeshBasicMaterial({map:backdropTexture,side:THREE.BackSide,fog:false,color:0xbba0aa}));
  backdrop.name='upside-down-photo';backdrop.position.y=0;world.add(backdrop);
@@ -34,6 +42,15 @@ function createRealm(){
    tendril([new THREE.Vector3(x+1,.06,z+1),new THREE.Vector3(x,.6,z),new THREE.Vector3(x-.5,b.h*.5,z),new THREE.Vector3(x+.4,b.h,z)],.09);
   }
  }
+ // Low roots and stones lie directly along the chase routes.
+ const stones=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1,0),new THREE.MeshStandardMaterial({color:0x40303c,roughness:1}),120);stones.name='upside-down-ground-stones';
+ const pebble=new THREE.Object3D();
+ for(let i=0;i<120;i++){
+  const x=Math.sin(i*7.31)*65,z=Math.cos(i*3.17)*65;
+  pebble.position.set(x,.04,z);pebble.scale.set(.12+(i%4)*.08,.07+(i%3)*.035,.18+(i%5)*.05);pebble.rotation.set(i,.3*i,0);pebble.updateMatrix();stones.setMatrixAt(i,pebble.matrix);
+  if(i%3===0&&!solid(x,z,2,0))tendril([new THREE.Vector3(x-2,.04,z),new THREE.Vector3(x-.5,.11,z+.5),new THREE.Vector3(x+1,.08,z-.4),new THREE.Vector3(x+2,.03,z+.2)],.07);
+ }
+ world.add(stones);
  // Bare trees outside the playable boundary add depth against the photographed forest.
  for(let i=0;i<28;i++){
   const a=i/28*Math.PI*2,x=Math.sin(a)*86,z=Math.cos(a)*86,h=8+(i%5)*1.4;
@@ -65,7 +82,7 @@ function beginCurse(e,saved=null){
  if(solid(hero.x,hero.z,.35,0)){hero.x=e.x;hero.z=e.z+3;if(solid(hero.x,hero.z,.35,0)){hero.x=spawnPoint.x;hero.z=spawnPoint.z;}}
  curse={victim:e,ghost,hero,preY:saved?.preY??e.y,preAngle:e.angle,elapsed:saved?.elapsed||0,health:saved?.health??75,enemy:saved?{...saved.enemy}:{x:e.x,y:0,z:e.z},hitTime:0,strikeCooldown:0};
  if(solid(curse.enemy.x,curse.enemy.z,.38,0)){curse.enemy.x=hero.x;curse.enemy.z=hero.z;}
- curse.pose=[];e.mesh.traverse(b=>{if(b.isBone&&/^(UpperArm|LowerArm|LowerLeg|Head)/.test(b.name))curse.pose.push({bone:b,rotation:b.quaternion.clone()});});
+ curse.pose=[];e.mesh.traverse(b=>{if(b.isBone&&/^(UpperArm|LowerArm|UpperLeg|LowerLeg|Wrist|Head)/.test(b.name))curse.pose.push({bone:b,rotation:b.quaternion.clone()});});
  if(!e.curseEyes){e.curseEyes=new THREE.Mesh(new THREE.SphereGeometry(.17,12,8),new THREE.MeshBasicMaterial({color:0x100b19,transparent:true,opacity:0}));e.curseEyes.scale.set(1.2,.45,.8);e.curseEyes.position.set(0,1.66,.1);e.mesh.add(e.curseEyes);}e.curseEyes.visible=true;
  e.cursed=true;e.vx=e.vy=e.vz=0;e.frozen=0;hands.root.visible=false;
  realm.clock.position.set(hero.x-3,0,hero.z-7);document.body.classList.add('in-curse');$('curseHUD').hidden=false;releaseInputs();updateCurse(0);updateUI();syncVecnaMusic();
@@ -96,7 +113,18 @@ function updateCurse(dt){
  c.ghost.position.set(c.enemy.x,0,c.enemy.z);c.ghost.rotation.y=Math.atan2(dx,dz);PolarityWorld.animate(c.ghost,c.hitTime>0?'HitRecieve':'Run',dt);
  e.y=c.preY+Math.min(2.8,c.elapsed*.6)+Math.sin(c.elapsed*2)*.08;e.mesh.position.set(e.x,e.y,e.z);e.mesh.rotation.z=Math.sin(c.elapsed*1.8)*.08;e.mesh.rotation.x=-(1-c.health/75)*.22;
  PolarityWorld.animate(e.mesh,'Wave',dt);
- for(const p of c.pose){const b=p.bone,t=1-c.health/75;b.quaternion.copy(p.rotation);if(/UpperArm/.test(b.name))b.rotateZ((b.name.endsWith('.L')?1:-1)*(.3+t*.7));if(/LowerArm|LowerLeg/.test(b.name))b.rotateX(t*.55);if(b.name==='Head')b.rotateX(t*.25);}e.curseEyes.material.opacity=(1-c.health/75)*.9;
+ // Begin the contorted pose during the trance itself, intensifying with each hit.
+ const bend=Math.min(1,c.elapsed/3),damage=1-c.health/75;
+ for(const p of c.pose){
+  const b=p.bone,side=b.name.endsWith('L')?1:-1;b.quaternion.copy(p.rotation);
+  if(/^UpperArm/.test(b.name)){b.rotateZ(side*bend*(.85+damage*.4));b.rotateX(-bend*.3);}
+  if(/^LowerArm/.test(b.name)){b.rotateX(-bend*(1.1+damage*.75));b.rotateZ(side*bend*.3);}
+  if(/^Wrist/.test(b.name))b.rotateX(bend*(.6+damage*.5));
+  if(/^UpperLeg/.test(b.name)){b.rotateZ(side*bend*.2);b.rotateX(side*bend*.2);}
+  if(/^LowerLeg/.test(b.name))b.rotateX(-bend*(.65+damage*.7));
+  if(b.name==='Head')b.rotateZ(bend*(.18+damage*.2));
+ }
+ e.curseEyes.material.opacity=damage*.9;
  realm.camera.position.set(c.hero.x,1.66,c.hero.z);realm.camera.rotation.set(c.hero.pitch,-c.hero.yaw,0,'YXZ');
  if(!c.observerPosition){
   const focus=new THREE.Vector3(e.x,c.preY+2,e.z);

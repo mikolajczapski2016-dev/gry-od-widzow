@@ -57,3 +57,5 @@ on the game's original 3D hand mesh. The photo is not covered by CC0 model licen
 - Obraz: https://dnm.nflximg.net/api/v6/2DuQlx0fM4wd1nzqm5BFBi6ILa8/AAAAQUMEFaZM3GzW2S6hs7A7vgz7o1skGXsrZXh93Uu1EH_GxJY6-lvlW79eYsqh2PxZmMBSmkUqiQGtLTXxSs4ukU6uIaQvFK_l0UCNi1HVjOLHsk9N72AKKDsTW09vUIUMzKukehh1cUBM21a-Ozvsfxl5.jpg?r=81f
 - Pobrano: 8 września 2026, na prośbę użytkownika. Materiał Stranger Things / Netflix; nie jest oznaczony jako otwarta licencja.
 - Zastosowanie: fotograficzne tło na sferze wokół sceny; drzewa i pnącza to osobna geometria 3D.
+
+Fragment leśnej ziemi ze zdjęcia jest również używany jako tekstura i delikatna mapa wypukłości podłoża w strefie chodzenia. Korzenie i kamienie na nim są geometrią 3D.
