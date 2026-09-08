@@ -31,7 +31,7 @@ function rescueMotion(e,dt){
  if(m!==activeRescue||!m.started||e.rescueDefeated||e.retired||e.safe||e===held||e.knocked>0||e.y>.2||e.thrown)return;
  let goal,speed;
  if(e.role==='attacker'){
-  goal=m.actors.filter(v=>v.role==='civilian'&&!v.safe&&v.health>0&&v!==held&&v.y<1).sort((a,b)=>Math.hypot(a.x-e.x,a.z-e.z)-Math.hypot(b.x-e.x,b.z-e.z))[0];speed=1.25;
+  goal=m.actors.filter(v=>v.role==='civilian'&&!v.cursed&&!v.safe&&v.health>0&&v!==held&&v.y<1).sort((a,b)=>Math.hypot(a.x-e.x,a.z-e.z)-Math.hypot(b.x-e.x,b.z-e.z))[0];speed=1.25;
   e.attackTime=Math.max(0,e.attackTime-dt);
   if(goal&&Math.hypot(goal.x-e.x,goal.z-e.z)<1.5&&e.attackTime===0){
    const origin=center(e),dir=center(goal).sub(origin),distance=dir.length();
@@ -53,7 +53,7 @@ function updateRescueMissions(){
  if(!m.started&&Math.hypot(player.x-m.x,player.z-m.z)<20){m.started=true;toast('Na ratunek! Czerwoni to napastnicy. Chroń osoby oznaczone na zielono.');}
  const civilians=m.actors.filter(e=>e.role==='civilian');
  if(m.casualty||civilians.some(e=>e.health===0)){finishRescue(m,false);return;}
- for(const e of civilians)if(!e.safe&&e!==held&&e.knocked<=0&&e.y<1&&Math.hypot(e.x-m.safe.x,e.z-m.safe.z)<2.1){e.safe=true;e.badge.visible=false;}
+ for(const e of civilians)if(!e.safe&&!e.cursed&&e!==held&&e.knocked<=0&&e.y<1&&Math.hypot(e.x-m.safe.x,e.z-m.safe.z)<2.1){e.safe=true;e.badge.visible=false;}
  if(civilians.every(e=>e.safe)&&m.actors.filter(e=>e.role==='attacker').every(e=>e.rescueDefeated))finishRescue(m,true);
 }
 function updateRescueUI(){

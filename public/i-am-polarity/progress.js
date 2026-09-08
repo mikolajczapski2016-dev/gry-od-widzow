@@ -1,17 +1,17 @@
 'use strict';
 const progressKey='i-am-polarity-progress-v1';
-const entityNumbers={x:[-100,100],y:[-5,110],z:[-100,100],startX:[-100,100],startZ:[-100,100],vx:[-1000,1000],vy:[-1000,1000],vz:[-1000,1000],health:[0,75],knocked:[0,20],scared:[0,20],hit:[0,2],thrown:[0,10],spin:[-100,100],angle:[-1e6,1e6],phase:[0,7],respawnTime:[0,3],attackTime:[0,3]};
+const entityNumbers={frozen:[0,5],x:[-100,100],y:[-5,110],z:[-100,100],startX:[-100,100],startZ:[-100,100],vx:[-1000,1000],vy:[-1000,1000],vz:[-1000,1000],health:[0,75],knocked:[0,20],scared:[0,20],hit:[0,2],thrown:[0,10],spin:[-100,100],angle:[-1e6,1e6],phase:[0,7],respawnTime:[0,3],attackTime:[0,3]};
 const entityFlags=['removed','defeated','rescueDefeated','retired','safe'];
 function snapshotEntity(e){
  const record={id:e.id,type:e.type};
  for(const key of Object.keys(entityNumbers))record[key]=e[key]||0;
- for(const key of entityFlags)record[key]=!!e[key];
+ for(const key of entityFlags)record[key]=!!e[key];if(e.cursed&&curse)record.y=curse.preY;
  return record;
 }
 function saveProgress(){
  if(!ready)return;
  try{
-  const data={version:1,score,recycled,rescued,charged,missionAnnounced,time,tool,ammo,reloadTime,player:{...player},held:held?.id||null,entities:entities.map(snapshotEntity),missions:rescueMissions.map(m=>({id:m.id,state:m.state,started:!!m.started,casualty:!!m.casualty,hasActors:!!m.actors.length}))};
+  const data={version:1,gloves:{wallet,owned:[...ownedGloves],equipped:equippedGlove},curse:curse?{victimId:curse.victim.id,hero:curse.hero,enemy:curse.enemy,elapsed:curse.elapsed,health:curse.health,preY:curse.preY}:null,score,recycled,rescued,charged,missionAnnounced,time,tool,ammo,reloadTime,player:{...player},held:held?.id||null,entities:entities.map(snapshotEntity),missions:rescueMissions.map(m=>({id:m.id,state:m.state,started:!!m.started,casualty:!!m.casualty,hasActors:!!m.actors.length}))};
   localStorage.setItem(progressKey,JSON.stringify(data));
   $('saveStatus').textContent='Postępy zapisane automatycznie na tym urządzeniu.';
  }catch{$('saveStatus').textContent='Zapis jest niedostępny. Sprawdź, czy przeglądarka pozwala zapisywać dane strony.';}
@@ -24,7 +24,7 @@ function loadProgress(){
   if(!number(s.score,0,1e9)||!Number.isInteger(s.recycled)||!number(s.recycled,0,3)||!Number.isInteger(s.charged)||!number(s.charged,0,2)||!flag(s.rescued)||!flag(s.missionAnnounced)||!number(s.time,0,1e9)||!['magnet','pistol'].includes(s.tool)||!Number.isInteger(s.ammo)||!number(s.ammo,0,12)||!number(s.reloadTime,0,1.1))throw Error('Postępy');
   for(const [key,a,b] of [['x',-68,68],['z',-68,68],['y',0,110],['yaw',-1e6,1e6],['pitch',-1.1,1.1],['vy',-1000,1000]])if(!number(s.player[key],a,b))throw Error('Pozycja');
   if(!flag(s.player.flying)||!flag(s.player.grounded))throw Error('Lot');
-  const records=new Map();for(const e of s.entities){if(!e||typeof e.id!=='string'||records.has(e.id))throw Error('Postać');for(const [key,[a,b]] of Object.entries(entityNumbers))if(!number(e[key],a,b))throw Error('Stan postaci');for(const key of entityFlags)if(!flag(e[key]))throw Error('Stan postaci');records.set(e.id,e);}
+  const records=new Map();for(const e of s.entities){if(!e||typeof e.id!=='string'||records.has(e.id))throw Error('Postać');if(e.frozen===undefined)e.frozen=0;for(const [key,[a,b]] of Object.entries(entityNumbers))if(!number(e[key],a,b))throw Error('Stan postaci');for(const key of entityFlags)if(!flag(e[key]))throw Error('Stan postaci');records.set(e.id,e);}
   if(s.missions.length!==rescueMissions.length||s.missions.filter(m=>m.state==='active').length>1)throw Error('Misje');
   const expected=new Map(entities.map(e=>[e.id,e.type]));
   for(const m of rescueMissions){const data=s.missions.find(d=>d.id===m.id);if(!data||!['available','active','success','failed'].includes(data.state)||!flag(data.started)||!flag(data.casualty)||!flag(data.hasActors)||(data.state!=='available'&&!data.hasActors))throw Error('Misja');
@@ -32,6 +32,12 @@ function loadProgress(){
   }
   if(records.size!==expected.size||[...expected].some(([id,type])=>records.get(id)?.type!==type))throw Error('Mapa zapisu');
   if(s.held!==null&&(!records.has(s.held)||records.get(s.held).removed))throw Error('Trzymany przedmiot');
+  const shop=s.gloves||{wallet:s.score,owned:['magnet'],equipped:'magnet'};
+  if(!number(shop.wallet,0,1e9)||!Array.isArray(shop.owned)||!shop.owned.includes('magnet')||shop.owned.some(id=>!gloveCatalog.some(g=>g.id===id))||!shop.owned.includes(shop.equipped))throw Error('Rękawice');
+  if(s.curse){const c=s.curse;if(shop.equipped!=='vecna'||records.get(c.victimId)?.type!=='person'||records.get(c.victimId).removed||!number(c.elapsed,0,1e9)||!number(c.health,1,75)||!number(c.preY,0,110)||!c.hero||!c.enemy)throw Error('Trans');
+   for(const body of [c.hero,c.enemy])if(!number(body.x,-68,68)||!number(body.z,-68,68)||!number(body.y,0,110))throw Error('Druga Strona');
+   if(!number(c.hero.yaw,-1e6,1e6)||!number(c.hero.pitch,-1.1,1.1))throw Error('Wzrok');
+  }
   // Validate everything before applying a snapshot to the live world.
   for(const m of rescueMissions){const data=s.missions.find(d=>d.id===m.id);if(data.hasActors)prepareRescue(m);m.state=data.state;m.started=data.started;m.casualty=data.casualty;if(m.marker)m.marker.visible=m.safeMarker.visible=m.state==='active';}
   activeRescue=rescueMissions.find(m=>m.state==='active')||null;
@@ -41,6 +47,7 @@ function loadProgress(){
   if(solid(player.x,player.z,.35,player.y)){player.x=spawnPoint.x;player.z=spawnPoint.z;player.y=0;player.vy=0;player.grounded=true;player.flying=false;}
   held=entities.find(e=>e.id===s.held)||null;
   $('flyButton').textContent=player.flying?'Ląduj':'Lataj';$('flyButton').setAttribute('aria-pressed',String(player.flying));
+  wallet=shop.wallet;ownedGloves=new Set(shop.owned);equippedGlove=shop.equipped;applyGlove(hands);if(s.curse)beginCurse(entities.find(e=>e.id===s.curse.victimId),s.curse);
   $('saveStatus').textContent='Wczytano zapis. Możesz kontynuować grę.';return true;
  }catch{$('saveStatus').textContent='Nie udało się wczytać zapisu. Możesz rozpocząć nową rozgrywkę.';return false;}
 }

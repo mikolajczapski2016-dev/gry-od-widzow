@@ -56,3 +56,19 @@ Kontynuacja przywraca punkty, zadania, aktywne i ukończone misje, pozycję, lot
 amunicję i stan świata, w tym trzymane przedmioty i odradzające się postacie.
 Zapis jest lokalny: nie przenosi się między urządzeniami, a wyczyszczenie danych
 strony go usuwa. Dotychczasowy rekord i ustawienia zostają zachowane.
+
+Sklep z rękawicami otwierasz przyciskiem „Sklep”. Punkty dają tyle samo monet;
+kupowanie nie obniża wyniku. Magnetyczna jest darmowa, lodowa kosztuje 150 monet
+(zamraża na 5 s), elektryczna 300 (piorun do 3 celów), ręka Vecny 500.
+Zakupy i wybrana rękawica zapisują się automatycznie. Starszy zapis dostaje monety
+równe dotychczasowemu wynikowi, bez utraty misji ani przedmiotów.
+
+Ręka Vecny: wybierz magnes i traf człowieka przyciskiem Użyj / F / kliknięciem.
+Lewa połowa ekranu pokazuje zwykły świat: ofiara lewituje, jej poza się zmienia,
+a oczy ciemnieją (bez drastycznych szczegółów). Po prawej ścigasz jej postać
+w mrocznej Drugiej Stronie z pnączami, zarodnikami i zegarem. WASD / joystick
+porusza Vecną, przeciąganie po prawej obraca wzrok, klik / F / Użyj uderza z bliska.
+Trzy trafienia kończą atak; ofiara znika i odradza się zgodnie z zasadami gry.
+„Mr Vecna” gra w pętli aż do pokonania ofiary lub przerwania transu. Pauza
+oraz wyciszenie zatrzymują muzykę. Można zapisać i wznowić trwający trans.
+Źródła inspiracji, filmiku i muzyki: `public/i-am-polarity/assets/SOURCES.md`.

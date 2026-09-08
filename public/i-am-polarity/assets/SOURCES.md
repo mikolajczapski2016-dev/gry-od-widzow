@@ -23,3 +23,19 @@ this project's code. The game is not affiliated with New Folder Games.
 Source selected by the user: https://www.youtube.com/watch?v=ykUkNR82i6A
 Downloaded 2026-09-08. Original approximately 15-second audio, without the video.
 This recording is not covered by the character models' CC0 license or the code's licenses.
+
+# Vecna glove and split-world encounter
+
+Original procedural fan interpretation inspired by Stranger Things season 4.
+The series separates the Upside Down from Vecna's psychic mind lair; this game's
+split-screen combines those motifs as requested, rather than reproducing canon exactly.
+No video frames or character model from the series are bundled.
+- Creators explain the trance and mind lair: https://www.netflix.com/tudum/articles/the-duffers-answer-your-burning-stranger-things-season-4-questions
+- Official Netflix India clip, Max escaping Vecna (levitation in the real world): https://www.youtube.com/watch?v=6Wn5kCgZdgc
+- Upside Down background: https://www.netflix.com/tudum/articles/stranger-things-5-upside-down-explained
+
+`mr-vecna.m4a`: “Mr Vecna, Please don’t Kill Steve.”, uploaded by Inside the Feed.
+Source: https://www.youtube.com/watch?v=HERXilqn4iE
+Downloaded 2026-09-08, original English audio (approximately 37 seconds).
+This fan song recording is separate from the CC0 character models and code licenses.
+It loops during the encounter and stops on victory, cancellation, mute or pause.
