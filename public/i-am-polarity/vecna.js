@@ -18,7 +18,33 @@ function createRealm(){
  const world=new THREE.Scene();world.background=new THREE.Color(0x36141e);world.fog=new THREE.FogExp2(0x442335,.009);
  world.add(new THREE.HemisphereLight(0xebc4ff,0x655779,3.4));const sun=new THREE.DirectionalLight(0xff8699,4);sun.position.set(-10,30,-20);world.add(sun);
  PolarityWorld.box(world,0,-.15,0,144,.3,144,0x49344d);
- for(const b of colliders){PolarityWorld.box(world,b.x,b.h/2,b.z,b.w,b.h,b.d,0x584159);for(let y=2;y<b.h;y+=4)PolarityWorld.box(world,b.x,y,b.z+b.d/2+.04,b.w*.7,.04,.04,0x8e354d);}
+ const ruins=new THREE.Group();ruins.name='upside-down-ruins';world.add(ruins);
+ for(const [index,b] of colliders.entries()){
+  const house=new THREE.Group();house.position.set(b.x,0,b.z);ruins.add(house);
+  PolarityWorld.box(house,0,b.h/2,0,b.w,b.h,b.d,index%2?0x393542:0x49333b);
+  // Recessed-looking black windows, broken shutters and cracked masonry on all sides.
+  for(let side=0;side<4;side++){
+   const wall=new THREE.Group();wall.rotation.y=side*Math.PI/2;house.add(wall);
+   const width=side%2?b.d:b.w,depth=side%2?b.w:b.d;
+   for(let y=2;y<b.h-1;y+=3.4)for(let x=-width/2+1.4;x<width/2-1;x+=3){
+    PolarityWorld.box(wall,x,y,depth/2+.02,1.15,1.7,.06,0x110f1a);
+    PolarityWorld.box(wall,x,y-.9,depth/2+.13,1.4,.12,.3,0x74616b);
+    const board=PolarityWorld.box(wall,x,y,depth/2+.12,1.45,.16,.13,0x69505a);board.rotation.z=(index%2?1:-1)*.5;
+   }
+   for(let j=0;j<3;j++){
+    const crack=PolarityWorld.box(wall,(j-1)*width*.28,b.h*.45,depth/2+.06,.045,b.h*.6,.04,0x1d1523);crack.rotation.z=(j-1)*.18;
+   }
+   PolarityWorld.box(wall,0,.9,depth/2+.04,1.3,1.8,.08,0x170e1b);
+  }
+  // Crooked roof slabs and exposed beams break the simple rectangular silhouette.
+  for(const sign of [-1,1]){
+   const roof=PolarityWorld.box(house,sign*b.w*.24,b.h+.65,0,b.w*.55,.23,b.d+.5,0x282431);roof.rotation.z=-sign*.22;
+  }
+  for(let j=0;j<4;j++){
+   const beam=PolarityWorld.box(house,(j-1.5)*b.w*.2,b.h+1.2,-b.d*.3,.18,2+(j%2),.18,0x55414d);beam.rotation.z=(j-1.5)*.13;
+  }
+ }
+
  // The downloaded still wraps around the distant scenery; nearby geometry provides parallax.
  const backdropTexture=new THREE.TextureLoader().load('assets/upside-down.jpg');
  // Sample the forest floor in the photo, then tile it across the walkable surface.
@@ -114,14 +140,15 @@ function updateCurse(dt){
  e.y=c.preY+Math.min(2.8,c.elapsed*.6)+Math.sin(c.elapsed*2)*.08;e.mesh.position.set(e.x,e.y,e.z);e.mesh.rotation.z=Math.sin(c.elapsed*1.8)*.08;e.mesh.rotation.x=-(1-c.health/75)*.22;
  PolarityWorld.animate(e.mesh,'Wave',dt);
  // Begin the contorted pose during the trance itself, intensifying with each hit.
- const bend=Math.min(1,c.elapsed/3),damage=1-c.health/75;
+ const bend=Math.min(1,c.elapsed/2),damage=1-c.health/75;
+ const snap=at=>THREE.MathUtils.smoothstep(c.elapsed,at,at+.14);
  for(const p of c.pose){
-  const b=p.bone,side=b.name.endsWith('L')?1:-1;b.quaternion.copy(p.rotation);
+  const b=p.bone,side=b.name.endsWith('L')?1:-1,armSnap=snap(side===1?2:3.5),legSnap=snap(side===1?5:6.5);b.quaternion.copy(p.rotation);
   if(/^UpperArm/.test(b.name)){b.rotateZ(side*bend*(.85+damage*.4));b.rotateX(-bend*.3);}
-  if(/^LowerArm/.test(b.name)){b.rotateX(-bend*(1.1+damage*.75));b.rotateZ(side*bend*.3);}
-  if(/^Wrist/.test(b.name))b.rotateX(bend*(.6+damage*.5));
+  if(/^LowerArm/.test(b.name)){b.rotateX(-bend*.25-armSnap*(1.9+damage*.25));b.rotateZ(side*armSnap*.55);}
+  if(/^Wrist/.test(b.name))b.rotateX(bend*.15+armSnap*1.2);
   if(/^UpperLeg/.test(b.name)){b.rotateZ(side*bend*.2);b.rotateX(side*bend*.2);}
-  if(/^LowerLeg/.test(b.name))b.rotateX(-bend*(.65+damage*.7));
+  if(/^LowerLeg/.test(b.name))b.rotateX(-bend*.1-legSnap*(1.65+damage*.2));
   if(b.name==='Head')b.rotateZ(bend*(.18+damage*.2));
  }
  e.curseEyes.material.opacity=damage*.9;
