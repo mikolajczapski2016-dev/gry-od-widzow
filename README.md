@@ -16,9 +16,9 @@ pistoletem. Animowani mieszkańcy reagują ucieczką i czasowym obezwładnieniem
 Zadania: recykling trzech skrzyń, przeniesienie pracownika do strefy ratunkowej
 oraz dostarczenie dwóch ogniw do generatora. Po wykonaniu zadań zabawa trwa dalej.
 
-Sterowanie: WASD/strzałki — ruch, mysz lub przeciąganie — rozglądanie,
+Sterowanie: WASD/strzałki — ruch, przeciąganie myszą — rozglądanie,
 E — chwyć/puść, F — rzuć/cios mocy, G — magnes/pistolet, klik — użyj,
-R — przeładuj, Spacja — skok, Shift — sprint, P/Escape — pauza.
+R — przeładuj, Spacja — skok / wznieś się, V — lot, Shift — sprint, P/Escape — pauza.
 Telefon: lewy joystick, przeciąganie po świecie i przyciski akcji po prawej.
 Powrót do listy gier znajduje się w ustawieniach. Rekord, dźwięk i czułość
 zapisują się lokalnie. Stary adres Miejskiego życia przekierowuje do nowej gry.
@@ -28,3 +28,7 @@ nie proceduralne figurki. Źródła: `public/i-am-polarity/assets/SOURCES.md`.
 Three.js r160 oraz dodatki są przechowywane lokalnie; licencje MIT znajdują się
 w katalogach `vendor` obu gier. Gra jest niezależnym projektem i nie jest
 powiązana z twórcami I Am Cat ani I Am Monkey.
+
+Mapa ma 136 × 136 jednostek: dodatkowe ulice, zabudowę i park.
+Przycisk Lataj / Ląduj działa na komputerze i telefonie. W locie poruszaj się
+w kierunku patrzenia, aby zmieniać wysokość; po wyłączeniu lotu opadasz na ziemię lub dach.

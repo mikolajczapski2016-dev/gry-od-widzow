@@ -1,6 +1,7 @@
 'use strict';
 const PolarityWorld = (() => {
  const materials=new Map(), shapes=new Map(), cube=new THREE.BoxGeometry(1,1,1), sphere=new THREE.SphereGeometry(1,16,12);
+ const bounds={x:68,z:68};
  let templates;
  function material(color,metalness=0,roughness=.75){const k=[color,metalness,roughness].join(':');if(!materials.has(k))materials.set(k,new THREE.MeshStandardMaterial({color,metalness,roughness}));return materials.get(k);}
  function mesh(parent,geometry,mat,x,y,z,sx=1,sy=1,sz=1){const m=new THREE.Mesh(geometry,mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
@@ -47,14 +48,33 @@ const PolarityWorld = (() => {
   root.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;o.material=o.material.clone();o.material.depthTest=false;o.material.depthWrite=false;o.renderOrder=100;}});camera.add(root);return {root,left,right,pistol};
  }
  function create(scene){
-  scene.background=new THREE.Color(0xb7d6e1);scene.fog=new THREE.Fog(0xb7d6e1,55,115);scene.add(new THREE.HemisphereLight(0xe1f5ff,0x738b81,2));
+  scene.background=new THREE.Color(0xb7d6e1);scene.fog=new THREE.Fog(0xb7d6e1,80,200);scene.add(new THREE.HemisphereLight(0xe1f5ff,0x738b81,2));
   const sun=new THREE.DirectionalLight(0xffead2,2.8);sun.position.set(-20,40,24);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-38,right:38,top:38,bottom:-38,near:1,far:95});sun.shadow.normalBias=.035;scene.add(sun);
-  const colliders=[];const ground=box(scene,0,-.16,0,85,.3,85,0xa1b9ac);ground.castShadow=false;
+  const colliders=[];const ground=box(scene,0,-.16,0,144,.3,144,0xa1b9ac);ground.castShadow=false;
   box(scene,0,-.005,8,75,.08,12,0x53656b).castShadow=false;box(scene,0,0,-7,35,.12,22,0xc5c8b9).castShadow=false;
   for(let z=-20;z<21;z+=3)for(let x=-17;x<18;x+=3){if(z>2&&z<15)continue;box(scene,x,.08,z,2.97,.02,.035,0xb7bcb0).castShadow=false;}
   for(let x=-32;x<35;x+=6)box(scene,x,.06,8,3,.03,.15,0xf2e3b5);
   const defs=[[-29,-10,16,15,14,0xd2b7a0],[-29,12,16,17,12,0xaac6c9],[29,-10,16,15,18,0xdccbb2],[29,12,16,17,11,0xb5b9ce],[-13,-29,24,12,15,0xc6c6b8],[13,-29,24,12,11,0xcaa995]];
-  for(const [x,z,w,d,h,color] of defs){box(scene,x,h/2,z,w,h,d,color);colliders.push({x,z,w,d,h});round(scene,x,h+.2,z,w+.3,.3,d+.3,0xe6e4d6,.1);
+  // Outer streets connect the original square to the new neighborhoods.
+  for(const x of [-43,43])box(scene,x,.015,0,10,.08,136,0x53656b).castShadow=false;
+  for(const z of [-42,32,57])box(scene,0,.02,z,136,.08,9,0x53656b).castShadow=false;
+  for(let n=-63;n<=63;n+=6){
+   for(const x of [-43,43])box(scene,x,.07,n,.15,.03,3,0xf2e3b5);
+   for(const z of [-42,32,57])box(scene,n,.08,z,3,.03,.15,0xf2e3b5);
+  }
+  for(const x of [-57,57])for(const z of [-55,-25,4,43])defs.push([x,z,14,16,12+(Math.abs(z)%4)*3,0xb8c8ce]);
+  for(const x of [-24,0,24])defs.push([x,-56,18,14,14+Math.abs(x)/4,0xd2b7a0]);
+  box(scene,0,.06,44,65,.12,14,0x789c73).castShadow=false;
+  box(scene,0,.14,44,65,.04,3,0xd3c6ac).castShadow=false;
+  label(scene,'PARK POLARITY',0,4,44,'#a8efb7',6);
+  for(const x of [-27,-15,15,27])for(const z of [39,49]){
+   mesh(scene,new THREE.CylinderGeometry(.2,.3,3,10),material(0x77624d),x,1.5,z);
+   mesh(scene,sphere,material(0x688e68),x,4,z,2,2.4,2);
+  }
+  // A visible boundary keeps the playable area easy to recognize from the air.
+  for(const x of [-69,69])box(scene,x,.5,0,1,1,140,0x9bafa9);
+  for(const z of [-69,69])box(scene,0,.5,z,140,1,1,0x9bafa9);
+  for(const [x,z,w,d,h,color] of defs){box(scene,x,h/2,z,w,h,d,color);colliders.push({x,z,w:w+.3,d:d+.3,h:h+.4});round(scene,x,h+.2,z,w+.3,.3,d+.3,0xe6e4d6,.1);
    for(let y=3;y<h-1;y+=3.1)for(let off=-w/2+2;off<w/2-1;off+=3.4){const window=box(scene,x+off,y,z+d/2+.05,1.8,1.9,.07,0x577e8b);window.material=material(0x577e8b,.35,.3);box(scene,x+off,y-1,z+d/2+.15,2.05,.12,.3,0xe3e0d2);box(scene,x+off,y,z+d/2+.1,.055,1.9,.05,0xc6d1d0);}
    for(let y=3;y<h-1;y+=3.1)for(let off=-d/2+2;off<d/2-1;off+=3.4)for(const sign of [-1,1]){box(scene,x+sign*(w/2+.05),y,z+off,.07,1.8,1.8,0x577e8b);box(scene,x+sign*(w/2+.15),y-.97,z+off,.3,.12,2,0xe4e1d2);}
   }
@@ -73,5 +93,5 @@ const PolarityWorld = (() => {
   for(const list of batches.values()){if(list.length<2)continue;const batch=new THREE.InstancedMesh(list[0].geometry,list[0].material,list.length);list.forEach((m,i)=>{m.updateMatrix();batch.setMatrixAt(i,m.matrix);scene.remove(m);});batch.castShadow=list.some(m=>m.castShadow);batch.receiveShadow=true;batch.computeBoundingSphere();scene.add(batch);}
   return colliders;
  }
- return {load,character,animate,create,object,hands,material,round,box,label};
+ return {bounds,load,character,animate,create,object,hands,material,round,box,label};
 })();
