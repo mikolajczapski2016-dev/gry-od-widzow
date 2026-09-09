@@ -11,18 +11,24 @@ function snapshotEntity(e){
  return record;
 }
 function saveProgress(){
- if(!ready||progressWriteBlocked)return;
+ if(!ready||progressWriteBlocked)return false;
  try{
   const data={version:1,realmVisit,gloves:{wallet,owned:[...ownedGloves],equipped:equippedGlove},curse:curse?{victimId:curse.victim.id,hero:curse.hero,enemy:curse.enemy,elapsed:curse.elapsed,health:curse.health,preY:curse.preY}:null,score,recycled,rescued,charged,missionAnnounced,districtRound,time,tool,ammo,reloadTime,player:{...player},held:held?.id||null,entities:entities.map(snapshotEntity),missions:rescueMissions.map(m=>({id:m.id,state:m.state,completed:m.completed,started:!!m.started,casualty:!!m.casualty,hasActors:!!m.actors.length}))};
   const encoded=JSON.stringify(data);
-  if(lastGoodProgress)localStorage.setItem(progressBackupKey,lastGoodProgress);
-  localStorage.setItem(progressKey,encoded);lastGoodProgress=encoded;
-  $('saveStatus').textContent='Postępy zapisane automatycznie na tym urządzeniu.';
- }catch{$('saveStatus').textContent='Zapis jest niedostępny. Sprawdź, czy przeglądarka pozwala zapisywać dane strony.';}
+  // A full backup slot must not prevent writing the latest progress.
+  if(lastGoodProgress){try{localStorage.setItem(progressBackupKey,lastGoodProgress);}catch{}}
+  localStorage.setItem(progressKey,encoded);
+  if(localStorage.getItem(progressKey)!==encoded)throw Error('Niepotwierdzony zapis');
+  lastGoodProgress=encoded;
+  $('saveStatus').textContent='Postępy zapisane na tym urządzeniu.';return true;
+ }catch{$('saveStatus').textContent='Zapis jest niedostępny. Sprawdź, czy przeglądarka pozwala zapisywać dane strony.';return false;}
 }
 function loadProgress(recoveryRaw=null){
  try{
-  const raw=recoveryRaw??localStorage.getItem(progressKey);if(!raw)return false;
+  const raw=recoveryRaw??localStorage.getItem(progressKey);if(!raw){
+   const backup=localStorage.getItem(progressBackupKey);
+   return backup?loadProgress(backup):false;
+  }
   const s=JSON.parse(raw),number=(v,a,b)=>typeof v==='number'&&Number.isFinite(v)&&v>=a&&v<=b,flag=v=>typeof v==='boolean';
   if(s.version!==1||!s.player||!Array.isArray(s.entities)||!Array.isArray(s.missions))throw Error('Format zapisu');
   if(!number(s.score,0,1e9)||!Number.isInteger(s.recycled)||!number(s.recycled,0,3)||!Number.isInteger(s.charged)||!number(s.charged,0,2)||!flag(s.rescued)||!flag(s.missionAnnounced)||!number(s.time,0,1e9)||!['magnet','pistol'].includes(s.tool)||!Number.isInteger(s.ammo)||!number(s.ammo,0,12)||!number(s.reloadTime,0,1.1))throw Error('Postępy');
@@ -30,7 +36,10 @@ function loadProgress(recoveryRaw=null){
   if(!Number.isSafeInteger(s.districtRound)||s.districtRound<1)throw Error('Runda');
   for(const [key,a,b] of [['x',-68,68],['z',-68,68],['y',0,110],['yaw',-1e6,1e6],['pitch',-1.1,1.1],['vy',-1000,1000]])if(!number(s.player[key],a,b))throw Error('Pozycja');
   if(!flag(s.player.flying)||!flag(s.player.grounded))throw Error('Lot');
-  const records=new Map();for(const e of s.entities){if(!e||typeof e.id!=='string'||records.has(e.id))throw Error('Postać');if(e.frozen===undefined)e.frozen=0;for(const [key,[a,b]] of Object.entries(entityNumbers))if(!number(e[key],a,b))throw Error('Stan postaci');for(const key of entityFlags)if(!flag(e[key]))throw Error('Stan postaci');records.set(e.id,e);}
+  const records=new Map();for(const e of s.entities){if(!e||typeof e.id!=='string'||records.has(e.id))throw Error('Postać');if(e.frozen===undefined)e.frozen=0;
+   // Older versions saved a slightly negative timer on the frame a person recovered.
+   if(number(e.knocked,-.08,0))e.knocked=0;
+   for(const [key,[a,b]] of Object.entries(entityNumbers))if(!number(e[key],a,b))throw Error('Stan postaci');for(const key of entityFlags)if(!flag(e[key]))throw Error('Stan postaci');records.set(e.id,e);}
   for(const m of rescueMissions)if(!s.missions.some(d=>d.id===m.id))s.missions.push({id:m.id,state:'available',started:false,casualty:false,hasActors:false});
   if(s.missions.filter(m=>m.state==='active').length>1)throw Error('Misje');
   const expected=new Map(entities.map(e=>[e.id,e.type]));
@@ -69,3 +78,16 @@ function loadProgress(recoveryRaw=null){
 
 }
 window.addEventListener('pagehide',saveProgress);
+
+function saveAndExit(){
+ if(!ready)return;
+ // Pause before taking the final snapshot, including when leaving during a trance.
+ if(mode==='play')screen('pause');
+ if(!saveProgress()){
+  const message=progressWriteBlocked?$('saveStatus').textContent:'Nie udało się zapisać. Gra pozostaje otwarta. '+$('saveStatus').textContent;
+  for(const feedback of document.querySelectorAll('.save-exit-feedback')){feedback.textContent=message;feedback.hidden=false;}
+  return;
+ }
+ window.location.assign('../index.html');
+}
+for(const button of document.querySelectorAll('.save-exit'))button.addEventListener('click',saveAndExit);

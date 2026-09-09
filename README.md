@@ -87,3 +87,10 @@ bohatera bez rozpoczynania transu. Na Drugiej Stronie można chodzić i latać,
 a mieszkańców zwykłego świata widać jako lekko rozmyte, półprzezroczyste
 sylwetki odzwierciedlające ich ruchy. Przycisk pozwala wrócić; pobyt zapisuje
 się razem z postępami. Zmiana rękawicy także przywraca normalny świat.
+
+W pauzie i menu przycisk „Zapisz i wyjdź” zapisuje postępy i wraca do listy
+gier. Jeśli zapis się nie powiedzie, gra zostaje otwarta i pokazuje błąd.
+Starsze zapisy z ujemnym licznikiem ogłuszenia postaci są naprawiane przy
+wczytywaniu, zachowując punkty, monety, rękawice i misje.
+
+Testy zapisu: `node --test tests/polarity-progress.test.cjs`.
