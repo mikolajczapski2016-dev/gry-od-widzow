@@ -5,7 +5,7 @@ const player={x:0,y:0,z:16,yaw:0,pitch:-.04,vy:0,grounded:true,flying:false};
 const entities=[],keys=new Set(),actionPointers=new Map(),stickState={x:0,y:0,id:null};
 let renderer,scene,camera,hands,colliders=[],ready=false,mode='menu',settingsFrom='menu',held=null,target=null;
 let tool='magnet',ammo=12,reloadTime=0,cooldown=0,time=0,score=0,best=0,sound=true,sensitivity=1,toastTime=0,recoil=0,needsRender=true,audio;
-let recycled=0,rescued=false,charged=0,missionAnnounced=false,lookPointer=null;
+let recycled=0,rescued=false,charged=0,missionAnnounced=false,districtRound=1,lookPointer=null;
 const effects=[],storageKey='i-am-polarity-v1';
 try{const s=JSON.parse(localStorage.getItem(storageKey));if(s){best=clamp(Number(s.best)||0,0,9999999);sound=s.sound!==false;sensitivity=clamp(Number(s.sensitivity)||1,.5,2);}}catch{}
 function save(){try{localStorage.setItem(storageKey,JSON.stringify({best,sound,sensitivity}));}catch{}}
@@ -172,10 +172,15 @@ function updateMissions(){
   if(e.type==='cell'&&Math.hypot(e.x,e.z+17)<2.3){e.removed=true;e.mesh.visible=false;charged++;points(150);toast('Generator: '+charged+'/2 ogniwa!');beep(950,.2);}
   if(e.worker&&!rescued&&e.health>0&&e.knocked<=0&&Math.hypot(e.x-12,e.z+14)<2.3){rescued=true;points(300);toast('Pracownik uratowany! +300 pkt');beep(1000,.3);}
  }
- if(recycled===3&&charged===2&&rescued&&!missionAnnounced){missionAnnounced=true;points(500);toast('DZIELNICA URATOWANA! Możesz dalej bawić się mocami.');}
+ if(recycled===3&&charged===2&&rescued&&!missionAnnounced){missionAnnounced=true;points(500);toast('DZIELNICA URATOWANA! +500 monet. Rusza kolejna runda zadań!');}
+ if(missionAnnounced&&!curse&&!vecnaFinale){
+  for(const e of entities)if(e.type==='crate'||e.type==='cell'||e.worker){resetEntity(e);e.removed=false;e.defeated=false;e.safe=false;e.mesh.visible=true;e.mesh.position.set(e.x,e.y,e.z);}
+  recycled=0;charged=0;rescued=false;missionAnnounced=false;districtRound++;
+ }
 }
 function updateUI(){
  updateRescueUI();
+ $('districtRound').textContent='Zadania dzielnicy · runda '+districtRound;
  target=curse?null:aim(true,18);$('crosshair').classList.toggle('active',!!target);$('targetLabel').textContent=target?target.name+' · E / Chwyć':'';
  $('heldLabel').textContent=held?'TRZYMASZ: '+held.name+' · F / Rzuć':'';
  $('score').textContent=score+' pkt';$('toolLabel').textContent=curse?'VECNA':tool==='magnet'?glove().name.toUpperCase():reloadTime?'PRZEŁADOWANIE…':'PISTOLET · '+ammo+'/12';

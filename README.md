@@ -14,7 +14,8 @@ I Am Polarity to autorski sandbox z widokiem z oczu magnetycznego bohatera.
 Można chwytać i rzucać przedmiotami oraz postaciami, odpychać je mocą i strzelać
 pistoletem. Animowani mieszkańcy reagują ucieczką i czasowym obezwładnieniem.
 Zadania: recykling trzech skrzyń, przeniesienie pracownika do strefy ratunkowej
-oraz dostarczenie dwóch ogniw do generatora. Po wykonaniu zadań zabawa trwa dalej.
+oraz dostarczenie dwóch ogniw do generatora. Po wykonaniu kompletu zadań rusza kolejna runda: skrzynie, ogniwa i pracownik
+wracają na miejsca startowe. Rundy nie mają limitu.
 
 Sterowanie: WASD/strzałki — ruch, przeciąganie myszą — rozglądanie,
 E — chwyć/puść, F — rzuć/cios mocy, G — magnes/pistolet, klik — użyj,
@@ -36,11 +37,15 @@ w kierunku patrzenia, aby zmieniać wysokość; po wyłączeniu lotu opadasz na 
 Mieszkańcy pojawiają się także w 24 sektorach poza centralnym placem.
 Miejsca startowe są losowane spośród wolnych punktów, z dala od budynków i przedmiotów.
 
-Misje ratunkowe wybierasz przyciskami „Napad na bank” i „Ratunek w parku”.
+Misje ratunkowe obejmują bank, park, zachodnią ulicę, eskortę na północy,
+ratunek na południu i patrol wschodniej dzielnicy. Wybierasz je przyciskami.
 Strzałka i odległość prowadzą na miejsce. Napastnicy atakują po przybyciu bohatera;
-obezwładnij ich mocami lub pistoletem i uratuj obie osoby. Po pokonaniu napastników
+obezwładnij ich mocami lub pistoletem i uratuj wszystkich mieszkańców. Po pokonaniu napastników
 mieszkańcy idą do zielonej strefy; można też przenieść ich magnesem.
-Nagrody: bank 800 pkt, park 600 pkt. Po porażce przycisk „Ponów” rozpoczyna nową próbę.
+Nagrody: 600–1000 monet i punktów. Po porażce przycisk „Ponów” rozpoczyna nową próbę.
+Po sukcesie pojawia się kolejne zgłoszenie tej misji — bez limitu powtórzeń.
+Liczniki ukończonych misji i numer rundy zapisują się razem z postępami; stare zapisy
+pozostają obsługiwane. Postacie misji są używane ponownie, aby nie powiększać świata bez końca.
 
 Przy obezwładnieniu postaci odtwarza się „Teletubisie mówią papa” z nagrania
 wskazanego przez użytkownika (źródło w `public/i-am-polarity/assets/SOURCES.md`).

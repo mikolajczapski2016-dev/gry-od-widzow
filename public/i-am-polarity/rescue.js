@@ -1,8 +1,12 @@
 'use strict';
 const rescueMissions=[
  {id:'bank',title:'Napad na bank',x:43,z:-25,safe:{x:43,z:-8},reward:800,enemies:[[40,-32],[46,-32],[43,-35]],civilians:[[41,-23],[45,-23]]},
- {id:'park',title:'Ratunek w parku',x:0,z:44,safe:{x:0,z:32},reward:600,enemies:[[-8,44],[8,44]],civilians:[[-2,44],[2,44]]}
-].map(m=>({...m,state:'available',actors:[],started:false}));
+ {id:'park',title:'Ratunek w parku',x:0,z:44,safe:{x:0,z:32},reward:600,enemies:[[-8,44],[8,44]],civilians:[[-2,44],[2,44]]},
+ {id:'west',title:'Zasadzka na zachodniej ulicy',x:-43,z:-12,safe:{x:-43,z:4},reward:700,enemies:[[-46,-18],[-40,-18],[-43,-21]],civilians:[[-45,-10],[-41,-10]]},
+ {id:'north',title:'Eskorta na północy',x:0,z:-42,safe:{x:16,z:-42},reward:900,enemies:[[-6,-44],[-6,-40],[-10,-42]],civilians:[[0,-44],[0,-42],[0,-40]]},
+ {id:'south',title:'Ratunek na południu',x:0,z:57,safe:{x:16,z:57},reward:750,enemies:[[-7,55],[-7,59],[-10,57]],civilians:[[0,55],[0,59]]},
+ {id:'east',title:'Patrol wschodniej dzielnicy',x:43,z:24,safe:{x:43,z:40},reward:1000,enemies:[[40,17],[46,17],[40,14],[46,14]],civilians:[[41,24],[43,24],[45,24]]}
+].map(m=>({...m,state:'available',actors:[],started:false,completed:0}));
 let activeRescue=null;
 function rescueMarker(x,z,color,text){
  const group=new THREE.Group();scene.add(group);
@@ -19,8 +23,8 @@ function prepareRescue(m){
  }
 }
 function startRescue(id){
- if(mode!=='play'||activeRescue)return;
- const m=rescueMissions.find(m=>m.id===id);if(!m||m.state==='success')return;
+ if(mode!=='play'||activeRescue||curse||vecnaFinale)return;
+ const m=rescueMissions.find(m=>m.id===id);if(!m)return;
  prepareRescue(m);
  for(const e of m.actors){resetEntity(e);e.removed=false;e.mesh.visible=true;e.defeated=false;e.rescueDefeated=false;e.safe=false;e.attackTime=2;e.badge.visible=true;}
  m.state='active';m.started=false;m.casualty=false;m.marker.visible=m.safeMarker.visible=true;activeRescue=m;
@@ -42,9 +46,11 @@ function rescueMotion(e,dt){
  if(d>(e.role==='attacker'?1.2:.3)){const step=Math.min(d,speed*dt);move(e,dx/d*step,dz/d*step,e.radius);e.angle=Math.atan2(dx,dz);e.moving=true;}
 }
 function finishRescue(m,success){
+ if(m!==activeRescue)return;
+ if(success)m.completed++;
  m.state=success?'success':'failed';activeRescue=null;m.marker.visible=m.safeMarker.visible=false;
  for(const e of m.actors){if(e.respawnTime>0||e.retired)continue;if(held===e)held=null;e.vx=e.vy=e.vz=0;if(e.role==='attacker'||!success){e.removed=true;e.mesh.visible=false;}else{e.badge.visible=false;}}
- if(success){points(m.reward);beep(1000,.3);toast(m.title+': wszyscy uratowani! +'+m.reward+' pkt');}
+ if(success){points(m.reward);beep(1000,.3);toast(m.title+': wszyscy uratowani! +'+m.reward+' monet. Czeka kolejne zgłoszenie!');}
  else toast('Misja nieudana — mieszkaniec został obezwładniony. Kliknij „Ponów”, aby spróbować jeszcze raz.');
  updateRescueUI();
 }
@@ -57,12 +63,12 @@ function updateRescueMissions(){
  if(civilians.every(e=>e.safe)&&m.actors.filter(e=>e.role==='attacker').every(e=>e.rescueDefeated))finishRescue(m,true);
 }
 function updateRescueUI(){
- for(const m of rescueMissions){const b=document.querySelector('[data-rescue="'+m.id+'"]');b.disabled=!!activeRescue||m.state==='success';b.textContent=(m.state==='success'?'✓ ':m.state==='failed'?'Ponów: ':'')+m.title;}
+ for(const m of rescueMissions){const b=document.querySelector('[data-rescue="'+m.id+'"]');b.disabled=!!activeRescue;b.textContent=(m.state==='success'?'Nowe: ':m.state==='failed'?'Ponów: ':'')+m.title+' · #'+(m.completed+1);}
  const m=activeRescue,p=$('rescueStatus');
- if(!m){p.textContent=rescueMissions.every(m=>m.state==='success')?'Wszystkie akcje ratunkowe ukończone!':'Wybierz zgłoszenie. Walka rozpocznie się, gdy dotrzesz na miejsce.';return;}
+ if(!m){p.textContent='Zgłoszenia bez końca · ukończono: '+rescueMissions.reduce((sum,m)=>sum+m.completed,0)+'. Wybierz misję; walka zacznie się na miejscu.';return;}
  const enemies=m.actors.filter(e=>e.role==='attacker'),civilians=m.actors.filter(e=>e.role==='civilian'),goal=enemies.every(e=>e.rescueDefeated)?m.safe:m;
  const delta=Math.atan2(goal.x-player.x,-(goal.z-player.z))-player.yaw;
  const arrow=['↑','↗','→','↘','↓','↙','←','↖'][(Math.round(delta/(Math.PI/4))%8+8)%8];
  p.textContent=arrow+' '+Math.round(Math.hypot(goal.x-player.x,goal.z-player.z))+' m · '+(goal===m?'Miejsce napadu':'Zielona strefa')+' | Napastnicy: '+enemies.filter(e=>e.rescueDefeated).length+'/'+enemies.length+' | Uratowani: '+civilians.filter(e=>e.safe).length+'/'+civilians.length+' | Zdrowie: '+Math.min(...civilians.map(e=>Math.ceil(e.health/75*100)))+'%';
 }
-for(const b of document.querySelectorAll('[data-rescue]'))b.addEventListener('click',()=>startRescue(b.dataset.rescue));
+for(const m of rescueMissions){const b=document.createElement('button');b.dataset.rescue=m.id;b.textContent=m.title;b.addEventListener('click',()=>startRescue(m.id));document.querySelector('.rescue-buttons').append(b);}
