@@ -81,3 +81,9 @@ oraz wyciszenie zatrzymują muzykę. Można zapisać i wznowić trwający trans.
 Ręka Vecny ma trójwymiarową dłoń, osobny kciuk, cztery długie palce, pazury
 oraz fakturę zaczerpniętą ze zdjęcia rekwizytu. To zdjęcie jest też w sklepie.
 Ręka Vecny kosztuje 2000 monet zdobywanych podczas gry.
+
+Ręka Vecny ma przycisk „Przejdź na drugą stronę”, który przenosi samego
+bohatera bez rozpoczynania transu. Na Drugiej Stronie można chodzić i latać,
+a mieszkańców zwykłego świata widać jako lekko rozmyte, półprzezroczyste
+sylwetki odzwierciedlające ich ruchy. Przycisk pozwala wrócić; pobyt zapisuje
+się razem z postępami. Zmiana rękawicy także przywraca normalny świat.

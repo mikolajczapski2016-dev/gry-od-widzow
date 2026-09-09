@@ -1,6 +1,68 @@
 'use strict';
 let curse=null,realm=null,vecnaBuffer=null,vecnaSource=null,vecnaLoading=null;
-let vecnaFinale=null;
+let vecnaFinale=null,realmVisit=false,realmEchoes=null;
+function setRealmVisit(active){
+ if(active){
+  if(equippedGlove!=='vecna'||curse||vecnaFinale)return;
+  if(!realm)realm=createRealm();
+  if(held){held.vx=held.vy=held.vz=0;held=null;}
+  for(const ghost of realm.ghosts.values())ghost.visible=false;
+ }
+ realmVisit=active;
+ if(realm)realm.clock.visible=!active;
+ document.body.classList.toggle('in-realm',active);
+ releaseInputs();needsRender=true;updateUI();
+}
+function toggleRealmVisit(){
+ if(mode!=='play'||curse||vecnaFinale)return;
+ setRealmVisit(!realmVisit);saveProgress();
+ toast(realmVisit?'Druga Strona. Widzisz niewyraźne sylwetki ludzi ze zwykłego świata.':'Wracasz do normalnego świata.');
+}
+// Blur only the residents in a separate transparent pass; scenery and controls stay sharp.
+function renderRealmVisit(){
+ if(!realmEchoes){
+  const world=new THREE.Scene();world.add(new THREE.HemisphereLight(0xd9dcff,0x655779,3));
+  const texture=new THREE.WebGLRenderTarget(1,1,{depthBuffer:true});
+  const material=new THREE.ShaderMaterial({transparent:true,depthTest:false,depthWrite:false,
+   uniforms:{map:{value:texture.texture},stepSize:{value:new THREE.Vector2()}},
+   vertexShader:'varying vec2 uvPosition;void main(){uvPosition=uv;gl_Position=vec4(position.xy,0.0,1.0);}',
+   fragmentShader:`uniform sampler2D map;uniform vec2 stepSize;varying vec2 uvPosition;
+    void main(){vec4 sum=vec4(0.0);for(int x=-1;x<=1;x++){for(int y=-1;y<=1;y++){
+     vec4 sampleColor=texture2D(map,uvPosition+vec2(float(x),float(y))*stepSize);
+     sum+=vec4(sampleColor.rgb*sampleColor.a,sampleColor.a)/9.0;
+    }}gl_FragColor=vec4(sum.rgb/max(sum.a,0.001),sum.a*0.48);}`});
+  const overlay=new THREE.Scene();overlay.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),material));
+  realmEchoes={scene:world,texture,material,overlay,camera:new THREE.Camera(),people:new Map()};
+ }
+ const echoes=realmEchoes;
+ for(const e of entities){
+  if(!e.person)continue;
+  let echo=echoes.people.get(e.id);
+  if(!echo&&!e.removed){
+   const figure=PolarityWorld.character(echoes.scene,e.modelIndex||0),sourceBones=[],bones=[];
+   e.mesh.traverse(o=>{if(o.isBone)sourceBones.push(o);});figure.traverse(o=>{if(o.isBone)bones.push(o);});
+   echo={figure,sourceBones,bones};echoes.people.set(e.id,echo);
+  }
+  if(!echo)continue;
+  echo.figure.visible=!e.removed&&e.mesh.visible;if(!echo.figure.visible)continue;
+  echo.figure.position.copy(e.mesh.position);echo.figure.quaternion.copy(e.mesh.quaternion);
+  // Copy the current pose so frozen, falling and rescued residents match the real world.
+  echo.bones.forEach((bone,i)=>{const source=echo.sourceBones[i];bone.position.copy(source.position);bone.quaternion.copy(source.quaternion);bone.scale.copy(source.scale);});
+ }
+ realm.camera.position.copy(camera.position);realm.camera.quaternion.copy(camera.quaternion);
+ realm.camera.aspect=camera.aspect;realm.camera.updateProjectionMatrix();realm.spores.rotation.y=time*.008;
+ realm.hands.root.position.y=hands.root.position.y;
+ const width=Math.max(1,Math.floor(innerWidth/2)),height=Math.max(1,Math.floor(innerHeight/2));
+ if(echoes.texture.width!==width||echoes.texture.height!==height)echoes.texture.setSize(width,height);
+ echoes.material.uniforms.stepSize.value.set(0.7/width,0.7/height);
+ renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);
+ renderer.render(realm.scene,realm.camera);
+ const clearColor=renderer.getClearColor(new THREE.Color()),clearAlpha=renderer.getClearAlpha();
+ renderer.setRenderTarget(echoes.texture);renderer.setClearColor(0x000000,0);renderer.render(echoes.scene,realm.camera);
+ renderer.setRenderTarget(null);renderer.setClearColor(clearColor,clearAlpha);
+ const autoClear=renderer.autoClear;renderer.autoClear=false;renderer.render(echoes.overlay,echoes.camera);renderer.autoClear=autoClear;
+}
+
 function startVecnaFinale(e){
  const figure=PolarityWorld.character(scene,e.modelIndex||0);figure.position.set(e.x,0,e.z);figure.rotation.y=e.angle;
  const materials=[];figure.traverse(m=>{if(m.isMesh){m.material=m.material.clone();m.material.transparent=true;materials.push(m.material);}});
@@ -128,7 +190,7 @@ function createRealm(){
  return {scene:world,camera:view,observer,hands:claws,spores,clock,ghosts:new Map()};
 }
 function beginCurse(e,saved=null){
- if(curse||!e.person||e.removed||e.safe)return false;
+ if(realmVisit||curse||!e.person||e.removed||e.safe)return false;
  if(!realm)realm=createRealm();
  let ghost=realm.ghosts.get(e.id);if(!ghost){ghost=PolarityWorld.character(realm.scene,e.modelIndex||0);PolarityWorld.label(ghost,'OFIARA',0,2.25,0,'#fff0c9',2.4);realm.ghosts.set(e.id,ghost);}for(const g of realm.ghosts.values())g.visible=false;ghost.visible=true;
  if(held){held.vx=held.vy=held.vz=0;held=null;}
@@ -192,9 +254,12 @@ function updateCurse(dt){
  if(keys.has('KeyF')||keys.has('Mouse0')||[...actionPointers.values()].some(a=>a==='use'||a==='throw'))curseStrike();
 }
 function renderWorld(){
+ if(realmVisit){renderRealmVisit();return;}
  if(!curse){renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);if(vecnaFinale){vecnaFinale.camera.aspect=innerWidth/innerHeight;vecnaFinale.camera.updateProjectionMatrix();}renderer.render(scene,vecnaFinale?vecnaFinale.camera:camera);return;}
  const half=Math.floor(innerWidth/2);realm.observer.aspect=half/innerHeight;realm.observer.updateProjectionMatrix();realm.camera.aspect=(innerWidth-half)/innerHeight;realm.camera.updateProjectionMatrix();
  renderer.setScissorTest(true);renderer.setViewport(0,0,half,innerHeight);renderer.setScissor(0,0,half,innerHeight);renderer.render(scene,realm.observer);
  renderer.setViewport(half,0,innerWidth-half,innerHeight);renderer.setScissor(half,0,innerWidth-half,innerHeight);renderer.render(realm.scene,realm.camera);renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);
 }
 document.getElementById('endCurse').onclick=()=>{if(mode==='play')endCurse(false);};
+
+document.getElementById('realmButton').onclick=toggleRealmVisit;

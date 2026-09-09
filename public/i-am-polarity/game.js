@@ -91,7 +91,7 @@ function toggleFlight(){
  toast(player.flying?'Lot! Patrz w górę lub w dół i ruszaj do przodu. Przycisk Ląduj kończy lot.':'Lądowanie…');beep(650,.15);
 }
 function jump(){if(player.grounded){player.vy=5.4;player.grounded=false;}}
-function action(name){if(mode!=='play'||vecnaFinale)return;if(curse){if(name==='use'||name==='throw')curseStrike();return;}if(name==='fly')toggleFlight();if(name==='grab')grab();if(name==='throw')toss();if(name==='switch')switchTool();if(name==='jump')jump();if(name==='use')tool==='pistol'?shoot():toss();}
+function action(name){if(mode!=='play'||vecnaFinale)return;if(curse){if(name==='use'||name==='throw')curseStrike();return;}if(realmVisit&&!['fly','jump'].includes(name))return;if(name==='fly')toggleFlight();if(name==='grab')grab();if(name==='throw')toss();if(name==='switch')switchTool();if(name==='jump')jump();if(name==='use')tool==='pistol'?shoot():toss();}
 function addEntity(type,x,z,options={}){
  const person=type==='person',mesh=person?PolarityWorld.character(scene,options.model||0):PolarityWorld.object(scene,type,options.color),e={id:'world-'+entities.length,modelIndex:options.model||0,type,name:options.name||({crate:'Metalowa skrzynia',cell:'Ogniwo energii',beam:'Stalowa belka',bench:'Ławka',barrel:'Metalowa beczka'}[type]),person,mesh,x,y:0,z,vx:0,vy:0,vz:0,startX:x,startZ:z,radius:person?.38:type==='beam'?1.7:type==='bench'?1.1:.55,height:person?1.85:type==='beam'?.7:1.1,health:75,knocked:0,scared:0,hit:0,thrown:0,spin:0,angle:Math.PI,worker:!!options.worker,removed:false,phase:Math.random()*6};mesh.position.set(x,0,z);entities.push(e);return e;
 }
@@ -135,7 +135,7 @@ function updatePlayer(dt){
  // Three.js looks along local -Z; yaw must rotate right for positive mouse input.
  camera.rotation.y=-player.yaw;
  cooldown=Math.max(0,cooldown-dt);recoil=Math.max(0,recoil-dt);if(reloadTime>0){reloadTime=Math.max(0,reloadTime-dt);if(reloadTime===0)ammo=12;}
- if(keys.has('KeyF')||[...actionPointers.values()].includes('throw'))toss();
+ if(!realmVisit&&(keys.has('KeyF')||[...actionPointers.values()].includes('throw')))toss();
  if(keys.has('Mouse0')||[...actionPointers.values()].includes('use'))action('use');
  if(held){const dir=forward(),origin=eye(),range=Math.min(3.1,Math.max(1.1,wallDistance(origin,dir,4)-held.radius-.25)),desired=origin.addScaledVector(dir,range);held.x+=(desired.x-held.x)*Math.min(1,dt*14);held.z+=(desired.z-held.z)*Math.min(1,dt*14);held.y+=(Math.max(.25,desired.y-held.height*.5)-held.y)*Math.min(1,dt*14);held.angle=-player.yaw;held.vx=held.vy=held.vz=0;}
  const sway=len>.1?Math.sin(time*9)*.013:Math.sin(time*2)*.004;hands.root.position.y=sway;hands.left.rotation.x=held?-.2:Math.sin(time*2)*.025;hands.right.position.z=-.57+recoil*.45;hands.pistol.visible=tool==='pistol';hands.right.rotation.x=reloadTime>0?-.65:0;
@@ -179,9 +179,12 @@ function updateMissions(){
  }
 }
 function updateUI(){
+ $('realmButton').hidden=equippedGlove!=='vecna'||!!curse||!!vecnaFinale;
+ $('realmButton').textContent=realmVisit?'Wróć do normalnego świata':'Przejdź na drugą stronę';
+ $('realmButton').setAttribute('aria-pressed',String(realmVisit));
  updateRescueUI();
  $('districtRound').textContent='Zadania dzielnicy · runda '+districtRound;
- target=curse?null:aim(true,18);$('crosshair').classList.toggle('active',!!target);$('targetLabel').textContent=target?target.name+' · E / Chwyć':'';
+ target=curse||realmVisit?null:aim(true,18);$('crosshair').classList.toggle('active',!!target);$('targetLabel').textContent=target?target.name+' · E / Chwyć':'';
  $('heldLabel').textContent=held?'TRZYMASZ: '+held.name+' · F / Rzuć':'';
  $('score').textContent=score+' pkt';$('toolLabel').textContent=curse?'VECNA':tool==='magnet'?glove().name.toUpperCase():reloadTime?'PRZEŁADOWANIE…':'PISTOLET · '+ammo+'/12';
  $('task1').textContent=(recycled===3?'✓':'○')+' Recykling: '+recycled+'/3 skrzynie';$('task2').textContent=(rescued?'✓':'○')+' Przenieś pracownika do zielonej strefy';$('task3').textContent=(charged===2?'✓':'○')+' Generator: '+charged+'/2 ogniwa';

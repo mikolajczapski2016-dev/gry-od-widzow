@@ -3,7 +3,7 @@ const gloveCatalog=[
  {id:'magnet',name:'Magnetyczna',price:0,color:0x64d5d3,description:'Chwytaj ludzi i przedmioty. Rzucaj nimi i odpychaj impulsem.',symbol:'◎'},
  {id:'ice',name:'Lodowa',price:150,color:0x91dfff,description:'Zamraża trafioną postać na 5 sekund. Zadaje 15 obrażeń.',symbol:'❄'},
  {id:'storm',name:'Elektryczna',price:300,color:0xe0bcff,description:'Piorun przeskakuje na maksymalnie 3 pobliskie cele. Zadaje 30 obrażeń.',symbol:'ϟ'},
- {id:'vecna',name:'Ręka Vecny',price:2000,color:0xe48592,description:'Uderz człowieka, aby wejść do Drugiej Strony. Ścigaj go, gdy jego ciało lewituje w normalnym świecie.',symbol:'✋'}
+ {id:'vecna',name:'Ręka Vecny',price:2000,color:0xe48592,description:'Przyciskiem przejdź sam na Drugą Stronę i zobacz niewyraźne sylwetki ludzi. Uderz człowieka, aby rozpocząć trans. Ścigaj go, gdy jego ciało lewituje w normalnym świecie.',symbol:'✋'}
 ];
 let wallet=0,equippedGlove='magnet',ownedGloves=new Set(['magnet']);
 function glove(){return gloveCatalog.find(g=>g.id===equippedGlove)||gloveCatalog[0];}
@@ -14,6 +14,7 @@ function updateShop(){
 function buyGlove(id){
  if(mode!=='shop'||curse)return;const g=gloveCatalog.find(g=>g.id===id);if(!g)return;
  if(!ownedGloves.has(id)){if(wallet<g.price)return;wallet-=g.price;ownedGloves.add(id);}
+ if(realmVisit&&id!=='vecna')setRealmVisit(false);
  equippedGlove=id;tool='magnet';applyGlove(hands,id);updateShop();saveProgress();beep(650,.1);
 }
 let vecnaSkinTexture=null;

@@ -14,3 +14,6 @@
 .glove-art{position:relative;overflow:hidden;border-radius:10px}.glove-art .vecna-reference{width:100%;height:100%;object-fit:cover;object-position:right 70%;transform:scale(3);transform-origin:100% 80%}
 
 .vecna-finale #crosshair,.vecna-finale #targetLabel,.vecna-finale #missions,.vecna-finale #rescuePanel,.vecna-finale #touch,.vecna-finale .desktop-help,.vecna-finale #heldLabel,.vecna-finale #openShop,.vecna-finale #flyButton{display:none}
+
+#realmButton{position:absolute;top:76px;left:50%;transform:translateX(-50%);max-width:44%;min-height:44px;pointer-events:auto;background:#592639;color:#ffe4ed;border-color:#db8eaa;font-size:12px;z-index:2}#realmButton[aria-pressed="true"]{background:#96516c}.in-realm #missions,.in-realm #rescuePanel,.in-realm #heldLabel,.in-realm .desktop-help,.in-realm .actions [data-action="grab"],.in-realm .actions [data-action="throw"],.in-realm .actions [data-action="switch"],.in-realm .actions [data-action="use"]{display:none}
+@media(max-height:500px){#realmButton{top:66px;font-size:11px;padding:8px}}

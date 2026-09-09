@@ -13,7 +13,7 @@ function snapshotEntity(e){
 function saveProgress(){
  if(!ready||progressWriteBlocked)return;
  try{
-  const data={version:1,gloves:{wallet,owned:[...ownedGloves],equipped:equippedGlove},curse:curse?{victimId:curse.victim.id,hero:curse.hero,enemy:curse.enemy,elapsed:curse.elapsed,health:curse.health,preY:curse.preY}:null,score,recycled,rescued,charged,missionAnnounced,districtRound,time,tool,ammo,reloadTime,player:{...player},held:held?.id||null,entities:entities.map(snapshotEntity),missions:rescueMissions.map(m=>({id:m.id,state:m.state,completed:m.completed,started:!!m.started,casualty:!!m.casualty,hasActors:!!m.actors.length}))};
+  const data={version:1,realmVisit,gloves:{wallet,owned:[...ownedGloves],equipped:equippedGlove},curse:curse?{victimId:curse.victim.id,hero:curse.hero,enemy:curse.enemy,elapsed:curse.elapsed,health:curse.health,preY:curse.preY}:null,score,recycled,rescued,charged,missionAnnounced,districtRound,time,tool,ammo,reloadTime,player:{...player},held:held?.id||null,entities:entities.map(snapshotEntity),missions:rescueMissions.map(m=>({id:m.id,state:m.state,completed:m.completed,started:!!m.started,casualty:!!m.casualty,hasActors:!!m.actors.length}))};
   const encoded=JSON.stringify(data);
   if(lastGoodProgress)localStorage.setItem(progressBackupKey,lastGoodProgress);
   localStorage.setItem(progressKey,encoded);lastGoodProgress=encoded;
@@ -57,6 +57,7 @@ function loadProgress(recoveryRaw=null){
   held=entities.find(e=>e.id===s.held)||null;
   $('flyButton').textContent=player.flying?'Ląduj':'Lataj';$('flyButton').setAttribute('aria-pressed',String(player.flying));
   wallet=shop.wallet;ownedGloves=new Set(shop.owned);equippedGlove=shop.equipped;applyGlove(hands);if(s.curse)beginCurse(entities.find(e=>e.id===s.curse.victimId),s.curse);
+  if(s.realmVisit===true&&equippedGlove==='vecna'&&!curse)setRealmVisit(true);
   lastGoodProgress=raw;progressWriteBlocked=false;
   $('saveStatus').textContent=recoveryRaw?'Odzyskano postępy z kopii zapasowej.':'Wczytano zapis. Możesz kontynuować grę.';return true;
  }catch{
